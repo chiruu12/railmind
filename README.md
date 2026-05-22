@@ -1,6 +1,6 @@
 # Claude Skills Template
 
-A GitHub template with **58 curated Claude Code skills** for bootstrapping new projects. Skip the setup, start building.
+A GitHub template with **59 curated Claude Code skills** for bootstrapping new projects. Skip the setup, start building.
 
 ## Quick Start
 
@@ -16,7 +16,7 @@ A GitHub template with **58 curated Claude Code skills** for bootstrapping new p
 - Destructive operations blocked (force-push, hard reset, rm -rf)
 - Pre-tool-use safety hook that catches dangerous git commands
 
-### `.claude/skills/` — 58 Skills
+### `.claude/skills/` — 59 Skills
 
 #### Core Development (6)
 | Skill | What it does |
@@ -49,11 +49,12 @@ A GitHub template with **58 curated Claude Code skills** for bootstrapping new p
 | `/git-guardrails-claude-code` | Set up Husky hooks to block dangerous git commands |
 | `/setup-pre-commit` | Set up Husky + lint-staged + Prettier |
 
-#### Workflow (5)
+#### Workflow (6)
 | Skill | What it does |
 |---|---|
 | `/triage-issue` | Triage bugs, find root cause, create GitHub issues |
 | `/github-triage` | Label-based GitHub issue state machine |
+| `/pr-triage` | Triage AI bot review comments and CI failures on PRs |
 | `/qa` | Interactive QA session with issue filing |
 | `/edit-article` | Edit articles by restructuring and rewriting |
 | `/caveman` | Ultra-compressed communication mode (~75% fewer tokens) |
