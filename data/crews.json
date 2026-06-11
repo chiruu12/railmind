@@ -1,0 +1,15 @@
+{
+  "_comment": "CR-101 (on 12302) started duty 02:00 with 9h limit -> limit 11:00. Scheduled DDU arrival is 11:00 exactly; the demo +25 min delay projects 11:25 -> duty breach. CR-201 is the spare at PRYJ, the natural swap. Times naive IST, sim day 2026-06-13.",
+  "crews": [
+    { "id": "CR-101", "name": "Rakesh Sharma", "home_station": "NDLS", "assigned_train": "12302", "duty_start": "2026-06-13T02:00:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-102", "name": "Vikram Singh", "home_station": "NDLS", "assigned_train": "12560", "duty_start": "2026-06-13T05:30:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-103", "name": "Priya Nair", "home_station": "NDLS", "assigned_train": "22436", "duty_start": "2026-06-13T06:30:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-104", "name": "Suresh Yadav", "home_station": "NDLS", "assigned_train": "12420", "duty_start": "2026-06-13T05:00:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-105", "name": "Amit Verma", "home_station": "NDLS", "assigned_train": "12398", "duty_start": "2026-06-13T04:30:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-106", "name": "Deepak Mishra", "home_station": "DDU", "assigned_train": "12506", "duty_start": "2026-06-13T06:00:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-107", "name": "Kavita Joshi", "home_station": "DDU", "assigned_train": "12274", "duty_start": "2026-06-13T07:15:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-108", "name": "Mohan Lal", "home_station": "CNB", "assigned_train": "64581", "duty_start": "2026-06-13T08:00:00", "max_duty_hours": 9.0, "status": "on_duty" },
+    { "id": "CR-201", "name": "Anil Kumar", "home_station": "PRYJ", "assigned_train": null, "duty_start": null, "max_duty_hours": 9.0, "status": "spare" },
+    { "id": "CR-202", "name": "Sunita Devi", "home_station": "CNB", "assigned_train": null, "duty_start": null, "max_duty_hours": 9.0, "status": "spare" }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "_comment": "Sim day 2026-06-13, all times naive IST. Sim starts 08:00. Demo scenario: inject 25-min delay on 12302 at ~08:05 -> platform 1 conflict with 12560 at CNB (~09:35) + crew CR-101 duty breach projected at DDU. CNB platform 2 is blocked by terminating 12420 until 10:00 and platform 4 by 64581, so platform 3 is the feasible escape. Times are demo-engineered, not real timetables.",
+  "trains": [
+    {
+      "number": "12302",
+      "name": "Howrah Rajdhani",
+      "priority": 1,
+      "crew_id": "CR-101",
+      "route": [
+        { "station_code": "NDLS", "sched_arrival": null, "sched_departure": "2026-06-13T07:55:00", "platform": 1 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T09:10:00", "sched_departure": "2026-06-13T09:15:00", "platform": 1 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T10:10:00", "sched_departure": "2026-06-13T10:15:00", "platform": 1 },
+        { "station_code": "DDU", "sched_arrival": "2026-06-13T11:00:00", "sched_departure": null, "platform": 1 }
+      ]
+    },
+    {
+      "number": "12560",
+      "name": "Shiv Ganga Express",
+      "priority": 2,
+      "crew_id": "CR-102",
+      "route": [
+        { "station_code": "NDLS", "sched_arrival": null, "sched_departure": "2026-06-13T08:10:00", "platform": 2 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T09:35:00", "sched_departure": "2026-06-13T09:40:00", "platform": 1 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T10:40:00", "sched_departure": "2026-06-13T10:45:00", "platform": 2 },
+        { "station_code": "DDU", "sched_arrival": "2026-06-13T11:35:00", "sched_departure": null, "platform": 2 }
+      ]
+    },
+    {
+      "number": "12420",
+      "name": "Gomti Express",
+      "priority": 2,
+      "crew_id": "CR-104",
+      "route": [
+        { "station_code": "NDLS", "sched_arrival": null, "sched_departure": "2026-06-13T06:30:00", "platform": 3 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T09:30:00", "sched_departure": "2026-06-13T10:00:00", "platform": 2 }
+      ]
+    },
+    {
+      "number": "22436",
+      "name": "Vande Bharat Express",
+      "priority": 1,
+      "crew_id": "CR-103",
+      "route": [
+        { "station_code": "NDLS", "sched_arrival": null, "sched_departure": "2026-06-13T08:00:00", "platform": 4 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T10:05:00", "sched_departure": "2026-06-13T10:08:00", "platform": 1 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T11:10:00", "sched_departure": null, "platform": 3 }
+      ]
+    },
+    {
+      "number": "12398",
+      "name": "Mahabodhi Express",
+      "priority": 2,
+      "crew_id": "CR-105",
+      "route": [
+        { "station_code": "NDLS", "sched_arrival": null, "sched_departure": "2026-06-13T06:00:00", "platform": 5 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T08:20:00", "sched_departure": "2026-06-13T08:25:00", "platform": 1 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T09:30:00", "sched_departure": "2026-06-13T09:35:00", "platform": 1 },
+        { "station_code": "DDU", "sched_arrival": "2026-06-13T10:30:00", "sched_departure": null, "platform": 3 }
+      ]
+    },
+    {
+      "number": "12506",
+      "name": "North East Express",
+      "priority": 2,
+      "crew_id": "CR-106",
+      "route": [
+        { "station_code": "DDU", "sched_arrival": null, "sched_departure": "2026-06-13T07:30:00", "platform": 2 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T08:25:00", "sched_departure": "2026-06-13T08:30:00", "platform": 3 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T09:55:00", "sched_departure": "2026-06-13T10:00:00", "platform": 3 },
+        { "station_code": "NDLS", "sched_arrival": "2026-06-13T13:00:00", "sched_departure": null, "platform": 6 }
+      ]
+    },
+    {
+      "number": "12274",
+      "name": "Howrah Duronto",
+      "priority": 1,
+      "crew_id": "CR-107",
+      "route": [
+        { "station_code": "DDU", "sched_arrival": null, "sched_departure": "2026-06-13T08:45:00", "platform": 1 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T09:40:00", "sched_departure": "2026-06-13T09:42:00", "platform": 4 },
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T11:00:00", "sched_departure": "2026-06-13T11:05:00", "platform": 2 },
+        { "station_code": "NDLS", "sched_arrival": "2026-06-13T14:00:00", "sched_departure": null, "platform": 1 }
+      ]
+    },
+    {
+      "number": "64581",
+      "name": "Kanpur-Prayagraj MEMU",
+      "priority": 3,
+      "crew_id": "CR-108",
+      "route": [
+        { "station_code": "CNB", "sched_arrival": "2026-06-13T09:20:00", "sched_departure": "2026-06-13T09:50:00", "platform": 4 },
+        { "station_code": "PRYJ", "sched_arrival": "2026-06-13T12:10:00", "sched_departure": null, "platform": 2 }
+      ]
+    }
+  ]
+}
