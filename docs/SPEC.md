@@ -15,10 +15,10 @@ A multi-agent control room for Indian Railways: autonomous Train, Station, Crew,
 ## 2. What the judges see (demo narrative)
 
 1. Dashboard shows a live corridor map (4 stations, ~8 trains moving on schedule) + a station platform Gantt + an **agent activity feed**.
-2. Operator injects a scenario: "Delay Train 12952 by 25 min" (one click).
+2. Operator injects a scenario: "Delay Train 12302 by 25 min" (one click).
 3. The agent cascade fires visibly in the feed: Train Agent raises delay event → Station Agent detects platform conflict, negotiates reallocation → Crew Agent flags duty-hour breach, proposes swap → Orchestrator approves → Passenger Info Agent broadcasts alerts. Each step shows the agent's reasoning, streamed live.
 4. The Gantt and map update; conflict resolved with zero human input. KPI panel shows knock-on delay avoided vs naive baseline.
-5. Passenger view: user **speaks** "Where is train 12952? I have a connection at Kanpur" → Deepgram STT → agent answers with live twin data → TTS reply.
+5. Passenger view: user **speaks** "Where is train 12302? I have a connection at Kanpur" → Deepgram STT → agent answers with live twin data → TTS reply.
 6. Human override: operator rejects an agent proposal; system recomputes. (Safety story: human-in-the-loop, full audit log.)
 
 **The three wow factors, in priority order:** (1) visible live agent negotiation, (2) voice passenger assistant, (3) measurable KPI improvement vs baseline.
@@ -34,7 +34,7 @@ A multi-agent control room for Indian Railways: autonomous Train, Station, Crew,
 | Persistence | **SQLite** (via SQLModel) for timetable/audit log; in-memory state for live twin | Zero setup; audit log survives restarts for the "traceability" story. |
 | Frontend | **React + TypeScript + Vite + Tailwind**, Leaflet (OSM) for map, WebSocket live updates | Team's known stack; fast. |
 | Intelligence split | **Deterministic core, LLM narration/negotiation layer** | Feasibility (platform conflicts, headway, crew duty math) is computed by rules/heuristics — guaranteed correct on stage. LLMs decide *between* feasible options and explain why. The demo can never produce an infeasible assignment because the LLM only picks from rule-validated candidates. |
-| Scale | 1 corridor (e.g. New Delhi–Kanpur–Prayagraj–Mughalsarai), 4 stations, ~8 trains, 1 spare crew pool | Small enough to seed by hand, big enough to manufacture conflicts. |
+| Scale | 1 corridor (New Delhi–Kanpur–Prayagraj–DDU), 4 stations, ~8 trains, 1 spare crew pool | Small enough to seed by hand, big enough to manufacture conflicts. |
 | Data | Fabricated timetable JSON seeded from real train numbers/names + Datameet stations.csv for coords | No live NTES scraping in MVP — sim is the source of truth. Real station coords make the map look legit. |
 
 ## 4. System architecture
@@ -132,7 +132,7 @@ Duty rules for MVP: max 9h duty; swap allowed only at a station with a spare cre
 - `POST /api/scenarios` — inject `{type: "delay"|"platform_block"|"crew_sick", ...params}`
 - `POST /api/decisions/{id}/resolve` — human approve/reject
 - `POST /api/chat` — passenger chat `{message, session_id}` → `{reply}`
-- `POST /api/voice` — audio in (webm/wav) → Deepgram STT → agent → `{reply_text, reply_audio_url}`
+- `POST /api/voice` — audio in (webm/wav) → Deepgram STT → agent → `{reply_text, reply_audio_b64, reply_audio_mime}`
 - `WS /ws` — all bus events, JSON-serialized `{topic, payload, ts}`
 - `POST /api/sim/{start|pause|reset}` + `POST /api/sim/speed`
 

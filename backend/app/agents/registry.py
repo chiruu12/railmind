@@ -15,6 +15,7 @@ from app.agents.passenger_info_agent import PassengerInfoAgent
 from app.agents.station_agent import StationAgent
 from app.agents.train_agent import TrainAgent
 from app.bus.bus import EventBus
+from app.contracts.events import SimTick
 
 logger = logging.getLogger(__name__)
 
@@ -37,4 +38,22 @@ def register_agents(bus: EventBus, sim: SimReader) -> None:
     ]
     for agent in agents:
         agent.register()
+
+    # Sim-reset watcher: POST /api/sim/reset rewinds the sim clock to 08:00.
+    # When sim_time jumps backwards, all per-run agent state (cooldowns,
+    # pending decisions, last-handled delays) is stale — clear it so the
+    # demo cascade can be re-run from a clean slate.
+    last_seen: dict[str, object] = {"t": None}
+
+    async def watch_reset(event: SimTick) -> None:
+        prev = last_seen["t"]
+        last_seen["t"] = event.sim_time
+        if prev is not None and event.sim_time < prev:  # type: ignore[operator]
+            logger.info("sim clock reversed (%s -> %s): resetting agent state", prev, event.sim_time)
+            cooldowns.clear()
+            ledger.clear()
+            for agent in agents:
+                agent.on_sim_reset()
+
+    bus.subscribe(SimTick.topic, watch_reset)
     logger.info("registered %d agents: %s", len(agents), [a.name for a in agents])

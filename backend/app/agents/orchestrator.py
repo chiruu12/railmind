@@ -42,6 +42,9 @@ class Orchestrator(BaseAgent):
         )
         self._resource_commits: dict[str, datetime] = {}  # resource → sim_time approved
 
+    def on_sim_reset(self) -> None:
+        self._resource_commits.clear()
+
     def register(self) -> None:
         self.subscribe("decision.proposed", self.on_proposed)
         self.subscribe("decision.resolved", self.on_resolved)

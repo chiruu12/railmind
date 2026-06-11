@@ -38,6 +38,10 @@ class TrainAgent(BaseAgent):
         self._last_handled_delay: dict[str, int] = {}
         self._causes: dict[str, str] = {}
 
+    def on_sim_reset(self) -> None:
+        self._last_handled_delay.clear()
+        self._causes.clear()
+
     def register(self) -> None:
         self.subscribe("train.status", self.on_train_status)
         self.subscribe("scenario.injected", self.on_scenario)

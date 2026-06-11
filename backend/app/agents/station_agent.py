@@ -72,6 +72,9 @@ class StationAgent(BaseAgent):
         # decision_id → (train_number, old_platform, new_platform)
         self._pending: dict[str, tuple[str, int, int]] = {}
 
+    def on_sim_reset(self) -> None:
+        self._pending.clear()
+
     def register(self) -> None:
         self.subscribe("delay.detected", self.on_delay)
         self.subscribe("decision.resolved", self.on_resolved)

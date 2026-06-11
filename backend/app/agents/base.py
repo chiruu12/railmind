@@ -69,6 +69,11 @@ class DecisionLedger:
     def get(self, decision_id: str) -> ProposalRecord | None:
         return self._records.get(decision_id)
 
+    def clear(self) -> None:
+        """Drop all records (sim reset). The id counter stays monotonic so
+        decision ids never collide with prior runs in the audit log."""
+        self._records.clear()
+
 
 class CooldownRegistry:
     """Skips identical triggers within COOLDOWN_SEC of sim-time.
@@ -88,10 +93,15 @@ class CooldownRegistry:
         prev = self._seen.get(key)
         if prev is not None:
             prev_fp, prev_time = prev
-            if prev_fp == fingerprint and (now - prev_time).total_seconds() < self._window:
+            delta = (now - prev_time).total_seconds()
+            # delta < 0 means the sim clock went backwards (reset) — stale entry.
+            if prev_fp == fingerprint and 0 <= delta < self._window:
                 return False
         self._seen[key] = (fingerprint, now)
         return True
+
+    def clear(self) -> None:
+        self._seen.clear()
 
 
 class BaseAgent:
@@ -110,6 +120,10 @@ class BaseAgent:
         self.sim = sim
         self.ledger = ledger
         self.cooldowns = cooldowns
+
+    def on_sim_reset(self) -> None:
+        """Clear per-run state. Called by the registry when the sim clock
+        jumps backwards (POST /api/sim/reset). Override where needed."""
 
     async def think(self, text: str, decision_id: str | None = None) -> None:
         """Publish one streamed reasoning step to the live agent feed."""
