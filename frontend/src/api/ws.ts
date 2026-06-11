@@ -9,6 +9,8 @@ import type { EventEnvelope, Topic, TopicPayloads } from './types'
 export type EventHandler = (envelope: EventEnvelope) => void
 
 export function wsUrl(): string {
+  const override = import.meta.env.VITE_WS_URL as string | undefined
+  if (override) return override
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
   return `${proto}://${location.host}/ws`
 }
