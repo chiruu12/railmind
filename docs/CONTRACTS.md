@@ -68,6 +68,42 @@ The bus interface (`subscribe`, `publish`, `EventBus.envelope`) is frozen; WS2 m
 | `WS /ws` | stream of `EventEnvelope` JSON |
 | `POST /api/sim/start` · `/api/sim/pause` · `/api/sim/reset` · `/api/sim/speed` (`{speed}`) | sim control |
 
+## Cross-workstream interfaces (build exactly to these seams)
+
+**WS1 →** `app/sim/engine.py`:
+
+```python
+class SimEngine:
+    def __init__(self, bus: EventBus, data_dir: str = "../data", speed: float = 1.0): ...
+    async def start(self) -> None      # begin/resume tick loop (asyncio task)
+    async def pause(self) -> None
+    async def reset(self) -> None      # reload seed, sim_time back to 08:00
+    def set_speed(self, speed: float) -> None
+    def state(self) -> NetworkState
+
+    # Deterministic read-only helpers (used by agent tools):
+    def get_platform_board(self, station_code: str) -> list[PlatformAssignment]
+    def find_feasible_platforms(self, station_code: str, train_number: str) -> list[int]
+    def project_downstream_impact(self, train_number: str, delay_min: int) -> list[StationStop]
+    def check_duty(self, crew_id: str, train_number: str) -> tuple[float, float, str]
+        # -> (projected_hours, limit_hours, breach_station_code or "")
+    def find_spare_crews(self, station_code: str | None = None) -> list[Crew]
+```
+
+Mutations flow through the bus only: the sim subscribes to `scenario.injected`,
+`platform.reassigned`, `crew.swapped` and applies them to the twin. Agents never
+mutate twin state directly — they publish events.
+
+**WS3 →** `app/agents/registry.py`: `def register_agents(bus: EventBus, sim: SimEngine) -> None`
+(creates all agents, subscribes them to their topics).
+
+**WS5 →** `app/api/passenger.py`: `def build_router(sim: SimEngine, bus: EventBus) -> APIRouter`
+(POST `/api/chat`, POST `/api/voice`).
+
+**WS2 →** `app/main.py` wires all three in a lifespan handler, each behind
+`try/except ImportError` with a logged warning, so the backend boots even while
+other workstreams are in flight. Final wiring is verified in Phase 2.
+
 ## Working in isolation
 
 - **Backend WS:** instantiate your own `EventBus`, publish fixture events from `tests/fixtures.py` examples (create them under your own dir if needed).
