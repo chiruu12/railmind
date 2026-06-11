@@ -1,122 +1,83 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { Suspense, lazy, useEffect } from 'react'
+import type { ComponentType } from 'react'
+import { Link, Route, Routes } from 'react-router'
+import { useEventStream } from './api/ws'
+import { fetchState } from './lib/http'
+import { useStore } from './store'
+import ControlRoomPage from './features/control-room/ControlRoomPage'
 
-function App() {
-  const [count, setCount] = useState(0)
+/**
+ * WS5 ships src/features/passenger/index.tsx later. import.meta.glob resolves to an
+ * empty map while the module is missing, so this app builds and runs without it —
+ * never turn this into a static import.
+ */
+const passengerModules = import.meta.glob<{ default: ComponentType }>(
+  './features/passenger/index.tsx',
+)
+const passengerLoader = passengerModules['./features/passenger/index.tsx']
 
+function PassengerPlaceholder() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-zinc-950">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-zinc-800 bg-zinc-900">
+        <span className="h-3 w-3 animate-ping rounded-full bg-amber-400" />
+      </div>
+      <div className="text-center">
+        <p className="text-lg font-semibold text-zinc-200">Passenger view — coming online</p>
+        <p className="mt-1 text-sm text-zinc-500">
+          The passenger assistant module has not been deployed to this build yet.
+        </p>
+      </div>
+      <Link
+        to="/"
+        className="rounded-md border border-zinc-700 px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-900"
+      >
+        ← Back to control room
+      </Link>
+    </div>
   )
 }
 
-export default App
+const PassengerView = lazy(async () => {
+  if (!passengerLoader) return { default: PassengerPlaceholder }
+  try {
+    return await passengerLoader()
+  } catch {
+    return { default: PassengerPlaceholder }
+  }
+})
+
+/** Mounted once for every route: hydrates the store and folds the live event stream. */
+function EventBridge() {
+  const applyEnvelope = useStore((s) => s.applyEnvelope)
+  const hydrate = useStore((s) => s.hydrate)
+  useEventStream(applyEnvelope)
+  useEffect(() => {
+    fetchState()
+      .then(hydrate)
+      .catch(() => {
+        // Backend REST not up (e.g. mock-server-only dev) — the mock's
+        // state.snapshot envelope hydrates the store instead.
+      })
+  }, [hydrate])
+  return null
+}
+
+export default function App() {
+  return (
+    <>
+      <EventBridge />
+      <Routes>
+        <Route path="/" element={<ControlRoomPage />} />
+        <Route
+          path="/passenger"
+          element={
+            <Suspense fallback={<PassengerPlaceholder />}>
+              <PassengerView />
+            </Suspense>
+          }
+        />
+      </Routes>
+    </>
+  )
+}

@@ -136,7 +136,12 @@ def _platform_for(state: NetworkState, train_number: str, station_code: str) -> 
 
 
 def _alternatives(state: NetworkState, train: Train, station_code: str, eta: datetime) -> str:
-    """Suggest another train serving the same next stop, arriving after the delayed one."""
+    """Suggest the best other train serving the same next stop.
+
+    Prefers a still-catchable train arriving *before* the delayed ETA (an actual
+    faster option); otherwise falls back to the next one after it.
+    """
+    candidates: list[tuple[datetime, Train]] = []
     for other in state.trains:
         if other.number == train.number or other.status == TrainStatus.TERMINATED:
             continue
@@ -144,12 +149,16 @@ def _alternatives(state: NetworkState, train: Train, station_code: str, eta: dat
             if stop.station_code != station_code or stop.sched_arrival is None:
                 continue
             other_eta = stop.sched_arrival + timedelta(minutes=other.delay_min)
-            if other_eta >= eta:
-                return (
-                    f" Alternatively, train {other.number} {other.name} also serves "
-                    f"{station_code} around {_fmt(other_eta)}."
-                )
-    return ""
+            if other_eta >= state.sim_time:
+                candidates.append((other_eta, other))
+    if not candidates:
+        return ""
+    earlier = [c for c in candidates if c[0] < eta]
+    other_eta, other = min(earlier or candidates, key=lambda c: c[0])
+    return (
+        f" Alternatively, train {other.number} {other.name} also serves "
+        f"{station_code} around {_fmt(other_eta)}."
+    )
 
 
 # ── deterministic template answers (AGENT_LLM=off / provider failure) ────────
@@ -216,6 +225,13 @@ def _template_reply(message: str, sim: Any) -> str:
     station = _find_station_code(message, state)
     if station is not None:
         return _station_reply(state, sim, station)
+    unknown_numbers = re.findall(r"\b(\d{4,5})\b", message)
+    if unknown_numbers:
+        known = ", ".join(t.number for t in state.trains[:8])
+        return (
+            f"I don't have train {unknown_numbers[0]} on this corridor. "
+            f"Trains I can track right now: {known}."
+        )
     return FALLBACK_REPLY
 
 
