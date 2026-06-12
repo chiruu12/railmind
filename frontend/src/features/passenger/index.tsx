@@ -46,6 +46,13 @@ const newId = () => nextId++
 const GREETING =
   'Namaste! I am RailMind Yatri. Ask me about any train or station on this corridor — by text or voice.'
 
+const QUICK_REPLIES = [
+  'Where is my train?',
+  'Any delays?',
+  'Platform info',
+  'Trains at CNB',
+]
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function fmtTime(iso: string | null): string {
@@ -112,13 +119,15 @@ export default function PassengerPage() {
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const [sessionId] = useState(() => `yatri-${crypto.randomUUID().slice(0, 8)}`)
+  const [instanceId] = useState(() => crypto.randomUUID().slice(0, 8))
+  const sessionId = selected ? `yatri-${instanceId}-${selected}` : `yatri-${instanceId}`
   const selectedRef = useRef(selected)
   useLayoutEffect(() => { selectedRef.current = selected })
   const mutedRef = useRef(muted)
   useLayoutEffect(() => { mutedRef.current = muted })
   const threadRef = useRef<HTMLDivElement | null>(null)
 
+  // Initial twin snapshot → train list + default selection (a delayed train if any).
   const load = useCallback(() => {
     setLoadError(false)
     fetchState()
@@ -151,10 +160,13 @@ export default function PassengerPage() {
       setWsLive(null)
       setPlatformOverrides({})
       setAlerts([])
+      setMessages([{ id: newId(), role: 'assistant', text: GREETING }])
+      setInput('')
     }
   }, [selected])
 
-  useEventStream((env) => {
+  // Fold live WS events for the selected train.
+  const { connected } = useEventStream((env) => {
     const train = selectedRef.current
     if (!train) return
     if (isTopic(env, 'train.status') && env.payload.train_number === train) {
@@ -186,21 +198,31 @@ export default function PassengerPage() {
     }
   })
 
+  const isNearBottom = () => {
+    const el = threadRef.current
+    if (!el) return true
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 80
+  }
+
   const appendMessage = (role: ChatMessage['role'], text: string) =>
     setMessages((prev) => [...prev, { id: newId(), role, text }])
 
+  const shouldScroll = useRef(true)
   useEffect(() => {
-    threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight })
+    if (shouldScroll.current) {
+      threadRef.current?.scrollTo({ top: threadRef.current.scrollHeight })
+    }
   }, [messages, busy])
 
-  const sendText = async () => {
-    const message = input.trim()
+  const sendMessage = async (text: string) => {
+    const message = text.trim()
     if (!message || busy) return
+    shouldScroll.current = true
     setInput('')
     appendMessage('user', message)
     setBusy(true)
     try {
-      const { reply } = await postChat(message, sessionId)
+      const { reply } = await postChat(message, sessionId, selected)
       appendMessage('assistant', reply)
     } catch {
       appendMessage('assistant', 'Sorry, I could not reach the assistant. Please try again.')
@@ -209,15 +231,18 @@ export default function PassengerPage() {
     }
   }
 
+  const sendText = () => sendMessage(input)
+
   const onAudio = useCallback(async (blob: Blob) => {
-    appendMessage('user', '🎤 Voice message')
+    shouldScroll.current = true
     setBusy(true)
     try {
-      const res = await postVoice(blob, sessionId)
+      const res = await postVoice(blob, sessionId, selectedRef.current)
+      appendMessage('user', `🎤 ${res.transcript}`)
       appendMessage('assistant', res.reply_text)
       if (res.reply_audio_b64 && res.reply_audio_mime && !mutedRef.current) {
         const audio = new Audio(`data:${res.reply_audio_mime};base64,${res.reply_audio_b64}`)
-        void audio.play().catch(() => undefined)
+        void audio.play().catch((e) => console.warn('audio playback failed', e))
       }
     } catch {
       appendMessage('assistant', 'Sorry, the voice service is unavailable right now.')
@@ -262,110 +287,129 @@ export default function PassengerPage() {
             type="button"
             onClick={() => setMuted((m) => !m)}
             title={muted ? 'Unmute voice replies' : 'Mute voice replies'}
+            aria-label={muted ? 'Unmute voice replies' : 'Mute voice replies'}
             className="rounded-full bg-indigo-600 px-3 py-1.5 text-sm hover:bg-indigo-500"
           >
             {muted ? '🔇' : '🔊'}
           </button>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-4 py-3">
-          {/* my-train selector */}
-          <label className="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
-            My train
-            <select
-              value={selected ?? ''}
-              onChange={(e) => setSelected(e.target.value || null)}
-              className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-zinc-900"
-            >
-              {!state && <option value="">Loading trains…</option>}
-              {state?.trains.map((t) => (
-                <option key={t.number} value={t.number}>
-                  {t.number} — {t.name}
-                </option>
-              ))}
-            </select>
-          </label>
+        {!connected && (
+          <div className="bg-amber-500 px-4 py-1.5 text-center text-[11px] font-medium text-white">
+            Live updates paused — reconnecting…
+          </div>
+        )}
 
-          {loadError && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-              Could not load the live network state.{' '}
-              <button type="button" onClick={load} className="font-semibold underline">
-                Retry
-              </button>
-            </div>
-          )}
-
-          {/* live status card */}
-          {selectedTrain && live && (
-            <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <p className="text-sm font-bold">
-                    {selectedTrain.number} {selectedTrain.name}
-                  </p>
-                  <p className="text-[11px] text-zinc-500">
-                    {selectedTrain.route[0]?.station_code} →{' '}
-                    {selectedTrain.route[selectedTrain.route.length - 1]?.station_code}
-                  </p>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          {/* top info area — scrolls independently, capped at 45% so chat always has room */}
+          <div className="max-h-[45%] shrink-0 overflow-y-auto px-4 pt-3">
+            <div className="flex flex-col gap-3">
+              {!state && !loadError && (
+                <div className="flex items-center justify-center gap-2 py-6 text-sm text-zinc-400">
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-zinc-300 border-t-indigo-600" />
+                  Loading network state…
                 </div>
-                <span
-                  className={clsx(
-                    'rounded-full px-2.5 py-1 text-[11px] font-semibold',
-                    STATUS_STYLE[live.status],
-                  )}
+              )}
+
+              {/* my-train selector */}
+              <label className="block text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                My train
+                <select
+                  value={selected ?? ''}
+                  onChange={(e) => setSelected(e.target.value || null)}
+                  className="mt-1 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-normal normal-case tracking-normal text-zinc-900"
                 >
-                  {STATUS_LABEL[live.status]}
-                </span>
-              </div>
-              <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl bg-zinc-100 p-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Delay</dt>
-                  <dd
-                    className={clsx(
-                      'text-sm font-bold',
-                      live.delayMin >= 5 ? 'text-red-600' : 'text-emerald-600',
-                    )}
-                  >
-                    {live.delayMin > 0 ? `+${live.delayMin} min` : 'On time'}
-                  </dd>
+                  {!state && <option value="">Loading trains…</option>}
+                  {state?.trains.map((t) => (
+                    <option key={t.number} value={t.number}>
+                      {t.number} — {t.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {loadError && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                  Could not load the live network state.{' '}
+                  <button type="button" onClick={load} className="font-semibold underline">
+                    Retry
+                  </button>
                 </div>
-                <div className="rounded-xl bg-zinc-100 p-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Next stop</dt>
-                  <dd className="text-sm font-bold">
-                    {live.nextStation ?? '—'}
-                    <span className="block text-[10px] font-normal text-zinc-500">
-                      ETA {fmtTime(live.eta)}
+              )}
+
+              {/* live status card */}
+              {selectedTrain && live && (
+                <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold">
+                        {selectedTrain.number} {selectedTrain.name}
+                      </p>
+                      <p className="text-[11px] text-zinc-500">
+                        {selectedTrain.route[0]?.station_code} →{' '}
+                        {selectedTrain.route[selectedTrain.route.length - 1]?.station_code}
+                      </p>
+                    </div>
+                    <span
+                      className={clsx(
+                        'rounded-full px-2.5 py-1 text-[11px] font-semibold',
+                        STATUS_STYLE[live.status],
+                      )}
+                    >
+                      {STATUS_LABEL[live.status]}
                     </span>
-                  </dd>
-                </div>
-                <div className="rounded-xl bg-zinc-100 p-2">
-                  <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Platform</dt>
-                  <dd className="text-sm font-bold">{platform ?? '—'}</dd>
-                </div>
-              </dl>
-            </section>
-          )}
+                  </div>
+                  <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="rounded-xl bg-zinc-100 p-2">
+                      <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Delay</dt>
+                      <dd
+                        className={clsx(
+                          'text-sm font-bold',
+                          live.delayMin >= 5 ? 'text-red-600' : 'text-emerald-600',
+                        )}
+                      >
+                        {live.delayMin > 0 ? `+${live.delayMin} min` : 'On time'}
+                      </dd>
+                    </div>
+                    <div className="rounded-xl bg-zinc-100 p-2">
+                      <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Next stop</dt>
+                      <dd className="text-sm font-bold">
+                        {live.nextStation ?? '—'}
+                        <span className="block text-[10px] font-normal text-zinc-500">
+                          ETA {fmtTime(live.eta)}
+                        </span>
+                      </dd>
+                    </div>
+                    <div className="rounded-xl bg-zinc-100 p-2">
+                      <dt className="text-[10px] uppercase tracking-wide text-zinc-500">Platform</dt>
+                      <dd className="text-sm font-bold">{platform ?? '—'}</dd>
+                    </div>
+                  </dl>
+                </section>
+              )}
 
-          {/* alert banner stack */}
-          {alerts.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              {alerts.map((a) => (
-                <div
-                  key={a.id}
-                  className={clsx(
-                    'rounded-lg border px-3 py-2 text-xs',
-                    SEVERITY_STYLE[a.severity],
-                  )}
-                >
-                  {a.message}
+              {/* alert banner stack */}
+              {alerts.length > 0 && (
+                <div className="flex flex-col gap-1.5">
+                  {alerts.map((a) => (
+                    <div
+                      key={a.id}
+                      className={clsx(
+                        'rounded-lg border px-3 py-2 text-xs',
+                        SEVERITY_STYLE[a.severity],
+                      )}
+                    >
+                      {a.message}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
+          </div>
 
-          {/* chat thread */}
-          <section className="flex min-h-[180px] flex-1 flex-col rounded-2xl border border-zinc-200 bg-white shadow-sm">
-            <div ref={threadRef} className="flex-1 space-y-2 overflow-y-auto p-3">
+          {/* chat thread — always gets remaining space */}
+          <section className="mx-4 mb-3 mt-2 flex min-h-0 flex-1 flex-col rounded-2xl border border-zinc-200 bg-white shadow-sm">
+            <div ref={threadRef} onScroll={() => { shouldScroll.current = isNearBottom() }} className="flex-1 space-y-2 overflow-y-auto p-3">
               {messages.map((m) => (
                 <div
                   key={m.id}
@@ -386,6 +430,21 @@ export default function PassengerPage() {
               {busy && <p className="px-1 text-xs text-zinc-400">Yatri is thinking…</p>}
             </div>
 
+            {messages.length <= 1 && !busy && (
+              <div className="flex flex-wrap gap-1.5 px-3 pb-1">
+                {QUICK_REPLIES.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => void sendMessage(q)}
+                    className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-medium text-indigo-700 hover:bg-indigo-100"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+
             {recorder.micError && (
               <p className="px-3 pb-1 text-[11px] text-amber-700">{recorder.micError}</p>
             )}
@@ -398,13 +457,14 @@ export default function PassengerPage() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void sendText()
                 }}
-                placeholder="Where is train 12302?"
+                placeholder="Ask about any train or station…"
                 className="min-w-0 flex-1 rounded-full border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm outline-none focus:border-indigo-400"
               />
               <button
                 type="button"
                 onClick={recorder.toggle}
                 title={recorder.recording ? 'Stop recording' : 'Ask by voice'}
+                aria-label={recorder.recording ? 'Stop recording' : 'Ask by voice'}
                 className={clsx(
                   'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg',
                   recorder.recording
@@ -418,6 +478,7 @@ export default function PassengerPage() {
                 type="button"
                 onClick={() => void sendText()}
                 disabled={busy || !input.trim()}
+                aria-label="Send message"
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white disabled:opacity-40"
               >
                 ➤
