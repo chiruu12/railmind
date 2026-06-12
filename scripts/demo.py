@@ -54,7 +54,8 @@ async def main(speed: float, quiet: bool) -> int:
 
     bus.subscribe("*", watcher)
 
-    sim = SimEngine(bus, data_dir="../data", speed=speed)
+    data_dir = str(Path(__file__).resolve().parent.parent / "data")
+    sim = SimEngine(bus, data_dir=data_dir, speed=speed)
     register_agents(bus, sim)
     await sim.start()
 

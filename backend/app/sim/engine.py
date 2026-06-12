@@ -237,7 +237,10 @@ class SimEngine:
         duty_end = duty_start + timedelta(hours=crew.max_duty_hours)
         delay = timedelta(minutes=train.delay_min)
         last = train.route[-1]
-        end_of_run = (last.sched_arrival or last.sched_departure) + delay  # type: ignore[operator]
+        last_time = last.sched_arrival or last.sched_departure
+        if last_time is None:
+            return (0.0, crew.max_duty_hours, "")
+        end_of_run = last_time + delay
         projected_hours = round((end_of_run - duty_start).total_seconds() / 3600, 2)
         breach = ""
         for stop in train.route:
@@ -282,6 +285,7 @@ class SimEngine:
                 crew = self._crews_by_id.get(str(params["crew_id"]))
                 if crew is not None:
                     crew.status = CrewStatus.OFF_DUTY
+                    crew.assigned_train = None
         except (KeyError, TypeError, ValueError):
             logger.exception("sim: bad scenario params %r", params)
 

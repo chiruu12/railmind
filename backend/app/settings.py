@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # Fast model for the hot agent loop (Groq) and quality model (Anthropic)
     groq_model: str = "llama-3.3-70b-versatile"
     anthropic_model: str = "claude-sonnet-4-6"
-    openai_model: str = "gpt-4o-mini"
+    openai_model: str = "gpt-5-nano"
 
     db_path: str = "railmind.sqlite"
     sim_speed: float = 1.0  # sim-minutes per real second

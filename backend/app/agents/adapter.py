@@ -97,7 +97,7 @@ class AgentRuntime:
             lambda: OpenAI(model=settings.openai_model, api_key=settings.openai_api_key),
         )
         order = (
-            [groq, anthropic, openai] if self.model_tier == "fast" else [anthropic, groq, openai]
+            [openai, groq, anthropic] if self.model_tier == "fast" else [anthropic, openai, groq]
         )
         keys = {
             "groq": settings.groq_api_key,

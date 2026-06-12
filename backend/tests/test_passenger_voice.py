@@ -21,7 +21,7 @@ def llm_off_no_keys(monkeypatch: pytest.MonkeyPatch):
     passenger._sessions.clear()
 
 
-VOICE_KEYS = {"reply_text", "reply_audio_b64", "reply_audio_mime"}
+VOICE_KEYS = {"transcript", "reply_text", "reply_audio_b64", "reply_audio_mime"}
 
 
 def test_text_fallback_without_deepgram_key():
