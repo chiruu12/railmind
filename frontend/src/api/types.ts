@@ -190,7 +190,7 @@ export interface ScenarioInjected {
   params: Record<string, unknown>
 }
 
-export interface KPIUpdated extends KPISnapshot {}
+export type KPIUpdated = KPISnapshot
 
 /** Map of topic → payload type, for typed event handling. */
 export interface TopicPayloads {

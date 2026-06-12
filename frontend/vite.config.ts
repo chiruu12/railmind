@@ -10,7 +10,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': backend,
-      '/ws': { target: backend.replace(/^http/, 'ws'), ws: true },
+      '/ws': {
+        target: backend.replace(/^http/, 'ws'),
+        ws: true,
+        configure: (proxy) => {
+          proxy.on('error', () => {})
+        },
+      },
     },
   },
 })
