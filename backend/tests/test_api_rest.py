@@ -54,8 +54,12 @@ def make_state() -> NetworkState:
         ],
         stations=[
             Station(
-                code="CNB", name="Kanpur Central", lat=26.45, lon=80.35,
-                platform_count=6, km_offset=440.0,
+                code="CNB",
+                name="Kanpur Central",
+                lat=26.45,
+                lon=80.35,
+                platform_count=6,
+                km_offset=440.0,
             )
         ],
         assignments=[
@@ -67,9 +71,7 @@ def make_state() -> NetworkState:
                 departure=datetime(2026, 6, 13, 9, 15),
             )
         ],
-        crews=[
-            Crew(id="CR-201", name="S. Verma", home_station="CNB", status=CrewStatus.SPARE)
-        ],
+        crews=[Crew(id="CR-201", name="S. Verma", home_station="CNB", status=CrewStatus.SPARE)],
         kpis=KPISnapshot(),
     )
 
@@ -77,8 +79,9 @@ def make_state() -> NetworkState:
 class FakeSim:
     """Implements the WS1 SimEngine interface from docs/CONTRACTS.md."""
 
-    def __init__(self, bus: EventBus | None = None, data_dir: str = "../data",
-                 speed: float = 1.0) -> None:
+    def __init__(
+        self, bus: EventBus | None = None, data_dir: str = "../data", speed: float = 1.0
+    ) -> None:
         self.bus = bus
         self.running = False
         self.speed = speed
@@ -115,7 +118,8 @@ class FakeSim:
 
     def find_spare_crews(self, station_code: str | None = None) -> list[Crew]:
         return [
-            c for c in self._state.crews
+            c
+            for c in self._state.crews
             if c.status == CrewStatus.SPARE
             and (station_code is None or c.home_station == station_code)
         ]
@@ -191,9 +195,7 @@ def test_scenario_injection_publishes_event(client: TestClient) -> None:
 
 
 def test_scenario_bad_type_422(client: TestClient) -> None:
-    response = client.post(
-        "/api/scenarios", json={"scenario_type": "alien_invasion", "params": {}}
-    )
+    response = client.post("/api/scenarios", json={"scenario_type": "alien_invasion", "params": {}})
     assert response.status_code == 422
 
 

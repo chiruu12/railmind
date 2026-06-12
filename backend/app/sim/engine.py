@@ -58,10 +58,10 @@ logger = logging.getLogger(__name__)
 
 SIM_START: Final = datetime(2026, 6, 13, 8, 0)
 TICK_REAL_SECONDS: Final = 1.0
-HEADWAY: Final = timedelta(minutes=5)        # platform occupied until departure + 5 min
-BOARDING: Final = timedelta(minutes=15)      # origin platform occupied 15 min before departure
+HEADWAY: Final = timedelta(minutes=5)  # platform occupied until departure + 5 min
+BOARDING: Final = timedelta(minutes=15)  # origin platform occupied 15 min before departure
 TERMINUS_DWELL: Final = timedelta(minutes=20)  # terminus occupancy when no departure is seeded
-DELAY_STATUS_THRESHOLD: Final = 5            # delay_min >= 5 -> status "delayed"
+DELAY_STATUS_THRESHOLD: Final = 5  # delay_min >= 5 -> status "delayed"
 
 
 @dataclass(frozen=True)
@@ -237,7 +237,10 @@ class SimEngine:
         duty_end = duty_start + timedelta(hours=crew.max_duty_hours)
         delay = timedelta(minutes=train.delay_min)
         last = train.route[-1]
-        end_of_run = (last.sched_arrival or last.sched_departure) + delay  # type: ignore[operator]
+        last_time = last.sched_arrival or last.sched_departure
+        if last_time is None:
+            return (0.0, crew.max_duty_hours, "")
+        end_of_run = last_time + delay
         projected_hours = round((end_of_run - duty_start).total_seconds() / 3600, 2)
         breach = ""
         for stop in train.route:
@@ -282,6 +285,7 @@ class SimEngine:
                 crew = self._crews_by_id.get(str(params["crew_id"]))
                 if crew is not None:
                     crew.status = CrewStatus.OFF_DUTY
+                    crew.assigned_train = None
         except (KeyError, TypeError, ValueError):
             logger.exception("sim: bad scenario params %r", params)
 
@@ -366,9 +370,7 @@ class SimEngine:
     async def _advance_to(self, now: datetime) -> None:
         """One tick: move the twin to sim time `now`, emit events."""
         self._sim_time = now
-        events: list[Event] = [
-            SimTick(sim_time=now, sim_speed=self._speed, running=self._running)
-        ]
+        events: list[Event] = [SimTick(sim_time=now, sim_speed=self._speed, running=self._running)]
         # Premium trains are admitted to contested platforms first.
         for train in sorted(self._trains, key=lambda t: (t.priority, t.number)):
             self._process_crossings(train, now)

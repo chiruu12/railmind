@@ -174,7 +174,11 @@ class StationAgent(BaseAgent):
             ),
             None,
         )
-        assert mover is not None  # options non-empty ⇒ some train has a feasible move
+        if mover is None:
+            logger.warning(
+                "station %s: no movable train found for conflict on P%s", self.code, platform
+            )
+            return
         new_platform = next(
             p for p in feasible[mover] if f"move {mover} to platform {p}" in options
         )

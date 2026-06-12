@@ -49,7 +49,9 @@ def register_agents(bus: EventBus, sim: SimReader) -> None:
         prev = last_seen["t"]
         last_seen["t"] = event.sim_time
         if prev is not None and event.sim_time < prev:  # type: ignore[operator]
-            logger.info("sim clock reversed (%s -> %s): resetting agent state", prev, event.sim_time)
+            logger.info(
+                "sim clock reversed (%s -> %s): resetting agent state", prev, event.sim_time
+            )
             cooldowns.clear()
             ledger.clear()
             for agent in agents:

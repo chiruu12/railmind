@@ -78,9 +78,7 @@ class EventBus:
         handlers = self._handlers[event.topic] + self._handlers[WILDCARD]
         if not handlers:
             return
-        results = await asyncio.gather(
-            *(h(event) for h in handlers), return_exceptions=True
-        )
+        results = await asyncio.gather(*(h(event) for h in handlers), return_exceptions=True)
         for result in results:
             if isinstance(result, Exception):
                 logger.exception("bus handler failed for %s", event.topic, exc_info=result)

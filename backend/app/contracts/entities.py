@@ -14,14 +14,14 @@ from pydantic import BaseModel, Field
 
 class TrainStatus(str, Enum):
     SCHEDULED = "scheduled"  # not yet departed origin
-    RUNNING = "running"      # between stations, on time (delay < 5 min)
-    DELAYED = "delayed"      # running with delay >= 5 min
+    RUNNING = "running"  # between stations, on time (delay < 5 min)
+    DELAYED = "delayed"  # running with delay >= 5 min
     AT_PLATFORM = "at_platform"
     TERMINATED = "terminated"
 
 
 class TrainPriority(IntEnum):
-    PREMIUM = 1   # Vande Bharat / Rajdhani — never held if avoidable
+    PREMIUM = 1  # Vande Bharat / Rajdhani — never held if avoidable
     EXPRESS = 2
     LOCAL = 3
 
@@ -33,10 +33,10 @@ class CrewStatus(str, Enum):
 
 
 class DecisionStatus(str, Enum):
-    PROPOSED = "proposed"   # awaiting orchestrator/human
+    PROPOSED = "proposed"  # awaiting orchestrator/human
     APPROVED = "approved"
     REJECTED = "rejected"
-    AUTO = "auto"           # executed without approval (low-stakes, e.g. alerts)
+    AUTO = "auto"  # executed without approval (low-stakes, e.g. alerts)
 
 
 class AlertSeverity(str, Enum):
@@ -46,9 +46,9 @@ class AlertSeverity(str, Enum):
 
 
 class ScenarioType(str, Enum):
-    DELAY = "delay"                    # params: train_number, delay_min, cause
+    DELAY = "delay"  # params: train_number, delay_min, cause
     PLATFORM_BLOCK = "platform_block"  # params: station_code, platform, duration_min
-    CREW_SICK = "crew_sick"            # params: crew_id
+    CREW_SICK = "crew_sick"  # params: crew_id
 
 
 class Station(BaseModel):

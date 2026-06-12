@@ -34,10 +34,12 @@ def t(hhmm: str) -> datetime:
 
 STATIONS = [
     Station(code="NDLS", name="New Delhi", lat=28.64, lon=77.22, platform_count=6, km_offset=0),
-    Station(code="CNB", name="Kanpur Central", lat=26.45, lon=80.35, platform_count=4,
-            km_offset=440),
-    Station(code="MGS", name="Mughalsarai Jn", lat=25.28, lon=83.12, platform_count=4,
-            km_offset=790),
+    Station(
+        code="CNB", name="Kanpur Central", lat=26.45, lon=80.35, platform_count=4, km_offset=440
+    ),
+    Station(
+        code="MGS", name="Mughalsarai Jn", lat=25.28, lon=83.12, platform_count=4, km_offset=790
+    ),
 ]
 
 
@@ -51,12 +53,15 @@ def make_trains() -> list[Train]:
         km_offset=120.0,
         speed_kmph=110.0,
         route=[
-            StationStop(station_code="NDLS", sched_arrival=None,
-                        sched_departure=t("08:00"), platform=1),
-            StationStop(station_code="CNB", sched_arrival=t("10:30"),
-                        sched_departure=t("10:40"), platform=1),
-            StationStop(station_code="MGS", sched_arrival=t("13:00"),
-                        sched_departure=None, platform=2),
+            StationStop(
+                station_code="NDLS", sched_arrival=None, sched_departure=t("08:00"), platform=1
+            ),
+            StationStop(
+                station_code="CNB", sched_arrival=t("10:30"), sched_departure=t("10:40"), platform=1
+            ),
+            StationStop(
+                station_code="MGS", sched_arrival=t("13:00"), sched_departure=None, platform=2
+            ),
         ],
     )
     on_time = Train(
@@ -68,12 +73,15 @@ def make_trains() -> list[Train]:
         km_offset=60.0,
         speed_kmph=120.0,
         route=[
-            StationStop(station_code="NDLS", sched_arrival=None,
-                        sched_departure=t("08:30"), platform=2),
-            StationStop(station_code="CNB", sched_arrival=t("11:00"),
-                        sched_departure=t("11:10"), platform=3),
-            StationStop(station_code="MGS", sched_arrival=t("13:30"),
-                        sched_departure=None, platform=3),
+            StationStop(
+                station_code="NDLS", sched_arrival=None, sched_departure=t("08:30"), platform=2
+            ),
+            StationStop(
+                station_code="CNB", sched_arrival=t("11:00"), sched_departure=t("11:10"), platform=3
+            ),
+            StationStop(
+                station_code="MGS", sched_arrival=t("13:30"), sched_departure=None, platform=3
+            ),
         ],
     )
     return [delayed, on_time]
@@ -81,10 +89,20 @@ def make_trains() -> list[Train]:
 
 def make_assignments() -> list[PlatformAssignment]:
     return [
-        PlatformAssignment(station_code="CNB", platform=1, train_number="12952",
-                           arrival=t("10:55"), departure=t("11:05")),
-        PlatformAssignment(station_code="CNB", platform=3, train_number="12302",
-                           arrival=t("11:00"), departure=t("11:10")),
+        PlatformAssignment(
+            station_code="CNB",
+            platform=1,
+            train_number="12952",
+            arrival=t("10:55"),
+            departure=t("11:05"),
+        ),
+        PlatformAssignment(
+            station_code="CNB",
+            platform=3,
+            train_number="12302",
+            arrival=t("11:00"),
+            departure=t("11:10"),
+        ),
     ]
 
 

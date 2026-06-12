@@ -113,6 +113,7 @@ def test_provider_chain_failure_falls_back_to_template(monkeypatch: pytest.Monke
         async def fail(messages):
             calls.append(name)
             raise RuntimeError(f"{name} down")
+
         return fail
 
     monkeypatch.setattr(

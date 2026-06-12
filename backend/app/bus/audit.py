@@ -144,8 +144,7 @@ class AuditSink:
                 select(EventLogRow).order_by(desc(EventLogRow.id)).limit(limit)
             ).all()
             return [
-                EventEnvelope(topic=r.topic, ts=r.ts, payload=json.loads(r.payload))
-                for r in rows
+                EventEnvelope(topic=r.topic, ts=r.ts, payload=json.loads(r.payload)) for r in rows
             ]
 
     @staticmethod

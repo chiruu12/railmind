@@ -58,6 +58,7 @@ class PassengerInfoAgent(BaseAgent):
             channels=["app", "display", "announcement"],
             template=template,
             facts={
+                "event_type": "delay",
                 "train": event.train_number,
                 "delay_min": event.delay_min,
                 "cause": event.cause,
@@ -84,6 +85,7 @@ class PassengerInfoAgent(BaseAgent):
             channels=["app", "display", "announcement"],
             template=template,
             facts={
+                "event_type": "platform_change",
                 "train": event.train_number,
                 "station": event.station_code,
                 "old_platform": event.old_platform,
@@ -109,7 +111,12 @@ class PassengerInfoAgent(BaseAgent):
             severity=AlertSeverity.INFO,
             channels=["app"],
             template=template,
-            facts={"train": event.train_number, "station": event.station_code},
+            facts={
+                "event_type": "crew_change",
+                "train": event.train_number,
+                "station": event.station_code,
+                "detail": f"Crew change at {event.station_code} — routine handover, no delay impact",
+            },
         )
 
     async def _broadcast(

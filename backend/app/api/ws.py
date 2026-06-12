@@ -44,8 +44,17 @@ async def ws_events(websocket: WebSocket) -> None:
     await websocket.accept()
     bus: EventBus = websocket.app.state.bus
 
-    queue: asyncio.Queue[EventEnvelope] = asyncio.Queue()
-    listener = queue.put_nowait
+    queue: asyncio.Queue[EventEnvelope] = asyncio.Queue(maxsize=500)
+
+    def _enqueue(env: EventEnvelope) -> None:
+        if queue.full():
+            try:
+                queue.get_nowait()
+            except asyncio.QueueEmpty:
+                pass
+        queue.put_nowait(env)
+
+    listener = _enqueue
     # No await between snapshot and registration -> no envelope is missed
     # or duplicated between replay history and the live queue.
     history = bus.replay()
@@ -54,9 +63,7 @@ async def ws_events(websocket: WebSocket) -> None:
     stream_task = asyncio.create_task(_stream(websocket, history, queue))
     watch_task = asyncio.create_task(_watch_disconnect(websocket))
     try:
-        done, _ = await asyncio.wait(
-            {stream_task, watch_task}, return_when=asyncio.FIRST_COMPLETED
-        )
+        done, _ = await asyncio.wait({stream_task, watch_task}, return_when=asyncio.FIRST_COMPLETED)
         for task in done:
             exc = task.exception()
             if exc is not None and not isinstance(exc, WebSocketDisconnect):

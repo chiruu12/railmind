@@ -214,7 +214,7 @@ class ConnState:
 # ── the scripted cascade (SPEC §2) ───────────────────────────────────────────
 
 
-def cascade_script(state: ConnState) -> list[tuple[float, str, dict]]:
+def cascade_script() -> list[tuple[float, str, dict]]:
     """(gap_seconds, topic, payload). Mutations to state are applied inline
     when each frame is sent (see effects in run_cascade)."""
     dec1 = {
@@ -401,7 +401,7 @@ async def run_ticks(ws: ServerConnection, state: ConnState) -> None:
 
 async def run_cascade(ws: ServerConnection, state: ConnState) -> None:
     await asyncio.sleep(CASCADE_DELAY_S)
-    for gap, topic, payload in cascade_script(state):
+    for gap, topic, payload in cascade_script():
         await asyncio.sleep(gap)
         apply_effect(state, topic, payload)
         await ws.send(envelope(topic, payload))
