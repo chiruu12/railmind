@@ -42,7 +42,9 @@ SYSTEM_PROMPT = (
     "delayed, state the delay and suggest a concrete alternative from the "
     "provided state when one exists. If the question is outside live train or "
     "station information, briefly say what you can help with. "
-    "If the user writes or speaks in Hindi or Hinglish, reply in the same language."
+    "If the user writes or speaks in Hindi or Hinglish, reply in the same language. "
+    "Never use markdown formatting — no bold, no italics, no bullet points. "
+    "Reply in plain text only."
 )
 
 FALLBACK_REPLY = (
@@ -389,13 +391,13 @@ def _deepgram_tts(text: str) -> bytes:
     from deepgram import DeepgramClient
 
     client = DeepgramClient(api_key=settings.deepgram_api_key)
-    response = client.speak.v1.audio.generate(
-        text=text[:1000], model=VOICE_TTS_MODEL, encoding="mp3",
+    return b"".join(
+        client.speak.v1.audio.generate(
+            text=text[:1000],
+            model=VOICE_TTS_MODEL,
+            encoding="mp3",
+        )
     )
-    stream = getattr(response, "stream", None) or getattr(response, "stream_memory", None)
-    if stream is None:
-        raise RuntimeError("deepgram TTS returned no audio stream")
-    return stream.getvalue()
 
 
 # ── router ───────────────────────────────────────────────────────────────────
