@@ -3,6 +3,7 @@
  */
 
 import type { NetworkState } from '../../api/types'
+import { API_BASE } from '../../lib/apiBase'
 
 export interface ChatResponse {
   reply: string
@@ -21,7 +22,7 @@ async function asJson<T>(res: Response): Promise<T> {
 }
 
 export function fetchState(): Promise<NetworkState> {
-  return fetch('/api/state', { signal: AbortSignal.timeout(8000) }).then((res) =>
+  return fetch(`${API_BASE}/api/state`, { signal: AbortSignal.timeout(8000) }).then((res) =>
     asJson<NetworkState>(res),
   )
 }
@@ -31,7 +32,7 @@ export function postChat(
   sessionId: string,
   trainNumber?: string | null,
 ): Promise<ChatResponse> {
-  return fetch('/api/chat', {
+  return fetch(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, session_id: sessionId, train_number: trainNumber ?? undefined }),
@@ -48,7 +49,9 @@ export function postVoice(
   form.append('audio', audio, 'clip.webm')
   form.append('session_id', sessionId)
   if (trainNumber) form.append('train_number', trainNumber)
-  return fetch('/api/voice', { method: 'POST', body: form, signal: AbortSignal.timeout(45000) }).then(
-    (res) => asJson<VoiceResponse>(res),
-  )
+  return fetch(`${API_BASE}/api/voice`, {
+    method: 'POST',
+    body: form,
+    signal: AbortSignal.timeout(45000),
+  }).then((res) => asJson<VoiceResponse>(res))
 }

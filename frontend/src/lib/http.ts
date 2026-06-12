@@ -4,9 +4,10 @@
  */
 
 import type { NetworkState, ScenarioType } from '../api/types'
+import { API_BASE } from './apiBase'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init)
+  const res = await fetch(`${API_BASE}${path}`, init)
   if (!res.ok) {
     throw new Error(`${init?.method ?? 'GET'} ${path} failed (${res.status})`)
   }
