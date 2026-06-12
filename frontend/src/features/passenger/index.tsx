@@ -235,17 +235,26 @@ export default function PassengerPage() {
 
   const onAudio = useCallback(async (blob: Blob) => {
     shouldScroll.current = true
+    appendMessage('user', '🎤 Voice message')
     setBusy(true)
     try {
       const res = await postVoice(blob, sessionId, selectedRef.current)
-      appendMessage('user', `🎤 ${res.transcript}`)
+      if (res.transcript) {
+        setMessages((prev) => {
+          const updated = [...prev]
+          const last = updated.findLastIndex((m) => m.role === 'user')
+          if (last >= 0) updated[last] = { ...updated[last], text: `🎤 ${res.transcript}` }
+          return updated
+        })
+      }
       appendMessage('assistant', res.reply_text)
       if (res.reply_audio_b64 && res.reply_audio_mime && !mutedRef.current) {
         const audio = new Audio(`data:${res.reply_audio_mime};base64,${res.reply_audio_b64}`)
         void audio.play().catch((e) => console.warn('audio playback failed', e))
       }
-    } catch {
-      appendMessage('assistant', 'Sorry, the voice service is unavailable right now.')
+    } catch (err) {
+      console.warn('voice request failed', err)
+      appendMessage('assistant', 'Voice processing took too long. Please try again, or type your question instead.')
     } finally {
       setBusy(false)
     }

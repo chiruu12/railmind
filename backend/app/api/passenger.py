@@ -41,7 +41,8 @@ SYSTEM_PROMPT = (
     "schedules, platforms, delays or trains. All times are IST. If a train is "
     "delayed, state the delay and suggest a concrete alternative from the "
     "provided state when one exists. If the question is outside live train or "
-    "station information, briefly say what you can help with."
+    "station information, briefly say what you can help with. "
+    "If the user writes or speaks in Hindi or Hinglish, reply in the same language."
 )
 
 FALLBACK_REPLY = (
@@ -376,7 +377,10 @@ def _deepgram_stt(data: bytes) -> str:
 
     client = DeepgramClient(api_key=settings.deepgram_api_key)
     response = client.listen.v1.media.transcribe_file(
-        request=data, model="nova-3", smart_format=True
+        request=data,
+        model="nova-3",
+        smart_format=True,
+        detect_language=True,
     )
     return response.results.channels[0].alternatives[0].transcript.strip()
 

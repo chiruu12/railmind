@@ -46,7 +46,7 @@ export function postChat(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, session_id: sessionId, train_number: trainNumber ?? undefined }),
-    signal: withTimeout(15000),
+    signal: withTimeout(25000),
   }).then((res) => asJson<ChatResponse>(res))
 }
 
@@ -59,7 +59,7 @@ export function postVoice(
   form.append('audio', audio, 'clip.webm')
   form.append('session_id', sessionId)
   if (trainNumber) form.append('train_number', trainNumber)
-  return fetch('/api/voice', { method: 'POST', body: form, signal: withTimeout(20000) }).then(
+  return fetch('/api/voice', { method: 'POST', body: form, signal: withTimeout(45000) }).then(
     (res) => asJson<VoiceResponse>(res),
   )
 }
