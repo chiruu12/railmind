@@ -14,7 +14,11 @@ export default defineConfig({
         target: backend.replace(/^http/, 'ws'),
         ws: true,
         configure: (proxy) => {
-          proxy.on('error', () => {})
+          proxy.on('error', (err: Error) => {
+            if ((err as NodeJS.ErrnoException).code !== 'ECONNREFUSED') {
+              console.warn('[vite-ws-proxy]', err.message)
+            }
+          })
         },
       },
     },

@@ -20,19 +20,8 @@ async function asJson<T>(res: Response): Promise<T> {
   return (await res.json()) as T
 }
 
-function withTimeout(ms: number, signal?: AbortSignal): AbortSignal {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), ms)
-  signal?.addEventListener('abort', () => {
-    clearTimeout(timer)
-    ctrl.abort()
-  })
-  ctrl.signal.addEventListener('abort', () => clearTimeout(timer))
-  return ctrl.signal
-}
-
 export function fetchState(): Promise<NetworkState> {
-  return fetch('/api/state', { signal: withTimeout(8000) }).then((res) =>
+  return fetch('/api/state', { signal: AbortSignal.timeout(8000) }).then((res) =>
     asJson<NetworkState>(res),
   )
 }
@@ -46,7 +35,7 @@ export function postChat(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, session_id: sessionId, train_number: trainNumber ?? undefined }),
-    signal: withTimeout(25000),
+    signal: AbortSignal.timeout(25000),
   }).then((res) => asJson<ChatResponse>(res))
 }
 
@@ -59,7 +48,7 @@ export function postVoice(
   form.append('audio', audio, 'clip.webm')
   form.append('session_id', sessionId)
   if (trainNumber) form.append('train_number', trainNumber)
-  return fetch('/api/voice', { method: 'POST', body: form, signal: withTimeout(45000) }).then(
+  return fetch('/api/voice', { method: 'POST', body: form, signal: AbortSignal.timeout(45000) }).then(
     (res) => asJson<VoiceResponse>(res),
   )
 }
