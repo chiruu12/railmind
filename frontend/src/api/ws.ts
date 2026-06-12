@@ -3,7 +3,7 @@
  * Connects to /ws (proxied to the backend in dev, see vite.config.ts).
  */
 
-import { useEffect, useRef, useLayoutEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { EventEnvelope, Topic, TopicPayloads } from './types'
 
 export type EventHandler = (envelope: EventEnvelope) => void
@@ -15,9 +15,10 @@ export function wsUrl(): string {
   return `${proto}://${location.host}/ws`
 }
 
-export function useEventStream(onEvent: EventHandler): void {
+export function useEventStream(onEvent: EventHandler): { connected: boolean } {
   const handlerRef = useRef(onEvent)
   useLayoutEffect(() => { handlerRef.current = onEvent })
+  const [connected, setConnected] = useState(false)
 
   useEffect(() => {
     let socket: WebSocket | null = null
@@ -35,8 +36,10 @@ export function useEventStream(onEvent: EventHandler): void {
       }
       socket.onopen = () => {
         retryMs = 500
+        setConnected(true)
       }
       socket.onclose = () => {
+        setConnected(false)
         if (!closed) {
           setTimeout(connect, retryMs)
           retryMs = Math.min(retryMs * 2, 5000)
@@ -50,6 +53,8 @@ export function useEventStream(onEvent: EventHandler): void {
       socket?.close()
     }
   }, [])
+
+  return { connected }
 }
 
 export function isTopic<T extends Topic>(

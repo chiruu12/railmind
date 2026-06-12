@@ -44,8 +44,17 @@ async def ws_events(websocket: WebSocket) -> None:
     await websocket.accept()
     bus: EventBus = websocket.app.state.bus
 
-    queue: asyncio.Queue[EventEnvelope] = asyncio.Queue()
-    listener = queue.put_nowait
+    queue: asyncio.Queue[EventEnvelope] = asyncio.Queue(maxsize=500)
+
+    def _enqueue(env: EventEnvelope) -> None:
+        if queue.full():
+            try:
+                queue.get_nowait()
+            except asyncio.QueueEmpty:
+                pass
+        queue.put_nowait(env)
+
+    listener = _enqueue
     # No await between snapshot and registration -> no envelope is missed
     # or duplicated between replay history and the live queue.
     history = bus.replay()

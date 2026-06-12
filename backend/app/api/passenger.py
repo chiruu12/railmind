@@ -30,8 +30,8 @@ from app.settings import settings
 
 logger = logging.getLogger(__name__)
 
-# In-module session memory: session_id -> [{"role": ..., "content": ...}], capped.
 MAX_TURNS = 10  # user+assistant pairs kept per session
+MAX_SESSIONS = 50
 _sessions: dict[str, list[dict[str, str]]] = {}
 
 SYSTEM_PROMPT = (
@@ -54,6 +54,7 @@ FALLBACK_REPLY = (
 class ChatRequest(BaseModel):
     message: str
     session_id: str = "default"
+    train_number: str | None = None
 
 
 # ── session memory ───────────────────────────────────────────────────────────
@@ -62,9 +63,12 @@ class ChatRequest(BaseModel):
 def _remember(session_id: str, role: str, content: str) -> None:
     history = _sessions.setdefault(session_id, [])
     history.append({"role": role, "content": content})
-    # Keep the last MAX_TURNS exchanges (2 messages per turn).
     if len(history) > MAX_TURNS * 2:
         del history[: len(history) - MAX_TURNS * 2]
+    # Evict oldest sessions if over the cap.
+    while len(_sessions) > MAX_SESSIONS:
+        oldest = next(iter(_sessions))
+        del _sessions[oldest]
 
 
 # ── twin-state lookup helpers ────────────────────────────────────────────────
@@ -313,8 +317,18 @@ _PROVIDERS = [
 ]
 
 
-async def _chat_pipeline(message: str, session_id: str, sim: Any) -> str:
+async def _chat_pipeline(
+    message: str, session_id: str, sim: Any, train_number: str | None = None
+) -> str:
     """Answer a passenger question. Never raises."""
+    effective_message = message
+    if train_number:
+        state = _safe_state(sim)
+        if state:
+            train = next((t for t in state.trains if t.number == train_number), None)
+            if train and not re.search(rf"\b{re.escape(train_number)}\b", message):
+                effective_message = f"[My train is {train_number} {train.name}] {message}"
+
     reply = ""
     try:
         if settings.agent_llm.lower() != "off":
@@ -322,8 +336,8 @@ async def _chat_pipeline(message: str, session_id: str, sim: Any) -> str:
             user_turn = {
                 "role": "user",
                 "content": (
-                    f"Live network state (JSON):\n{_context_blob(message, sim)}\n\n"
-                    f"Passenger question: {message}"
+                    f"Live network state (JSON):\n{_context_blob(effective_message, sim)}\n\n"
+                    f"Passenger question: {effective_message}"
                 ),
             }
             llm_messages = [*history, user_turn]
@@ -341,7 +355,7 @@ async def _chat_pipeline(message: str, session_id: str, sim: Any) -> str:
 
     if not reply:
         try:
-            reply = _template_reply(message, sim)
+            reply = _template_reply(effective_message, sim)
         except Exception:  # noqa: BLE001
             logger.exception("passenger chat: template fallback failed")
             reply = FALLBACK_REPLY
@@ -353,29 +367,26 @@ async def _chat_pipeline(message: str, session_id: str, sim: Any) -> str:
 
 # ── Deepgram STT / TTS (degrade gracefully without a key) ────────────────────
 
-VOICE_TTS_MODEL = "aura-asteria-en"
+VOICE_TTS_MODEL = "aura-2-asteria-en"
 VOICE_AUDIO_MIME = "audio/mpeg"  # Aura TTS encoded as mp3
 
 
 def _deepgram_stt(data: bytes) -> str:
-    from deepgram import DeepgramClient, PrerecordedOptions
+    from deepgram import DeepgramClient
 
-    client = DeepgramClient(settings.deepgram_api_key)
-    options = PrerecordedOptions(model="nova-2", smart_format=True)
-    response = client.listen.rest.v("1").transcribe_file({"buffer": data}, options)
+    client = DeepgramClient(api_key=settings.deepgram_api_key)
+    response = client.listen.v1.media.transcribe_file(
+        request=data, model="nova-3", smart_format=True
+    )
     return response.results.channels[0].alternatives[0].transcript.strip()
 
 
 def _deepgram_tts(text: str) -> bytes:
-    from deepgram import DeepgramClient, SpeakOptions
+    from deepgram import DeepgramClient
 
-    client = DeepgramClient(settings.deepgram_api_key)
-    options = SpeakOptions(model=VOICE_TTS_MODEL, encoding="mp3")
-    response = client.speak.rest.v("1").stream_memory({"text": text[:1000]}, options)
-    buffer = getattr(response, "stream_memory", None) or getattr(response, "stream", None)
-    if buffer is None:
-        raise RuntimeError("deepgram TTS returned no audio stream")
-    return buffer.getvalue()
+    client = DeepgramClient(api_key=settings.deepgram_api_key)
+    chunks = client.speak.v1.audio.generate(text=text[:1000], model=VOICE_TTS_MODEL, encoding="mp3")
+    return b"".join(chunks)
 
 
 # ── router ───────────────────────────────────────────────────────────────────
@@ -388,7 +399,7 @@ def build_router(sim: Any, bus: Any) -> APIRouter:
 
     @router.post("/chat")
     async def chat(body: ChatRequest) -> dict[str, str]:
-        reply = await _chat_pipeline(body.message, body.session_id, sim)
+        reply = await _chat_pipeline(body.message, body.session_id, sim, body.train_number)
         return {"reply": reply}
 
     @router.post("/voice")
@@ -396,6 +407,7 @@ def build_router(sim: Any, bus: Any) -> APIRouter:
         audio: UploadFile | None = File(default=None),
         text: str | None = Form(default=None),
         session_id: str = Form(default="voice"),
+        train_number: str | None = Form(default=None),
     ) -> dict[str, Any]:
         transcript: str | None = None
 
@@ -412,6 +424,7 @@ def build_router(sim: Any, bus: Any) -> APIRouter:
 
         if transcript is None:
             return {
+                "transcript": "",
                 "reply_text": (
                     "I couldn't make out any audio. Please try again, or type "
                     "your question instead."
@@ -420,7 +433,7 @@ def build_router(sim: Any, bus: Any) -> APIRouter:
                 "reply_audio_mime": None,
             }
 
-        reply_text = await _chat_pipeline(transcript, session_id, sim)
+        reply_text = await _chat_pipeline(transcript, session_id, sim, train_number)
 
         reply_audio_b64: str | None = None
         reply_audio_mime: str | None = None
@@ -433,6 +446,7 @@ def build_router(sim: Any, bus: Any) -> APIRouter:
                 logger.exception("passenger voice: Deepgram TTS failed")
 
         return {
+            "transcript": transcript,
             "reply_text": reply_text,
             "reply_audio_b64": reply_audio_b64,
             "reply_audio_mime": reply_audio_mime,

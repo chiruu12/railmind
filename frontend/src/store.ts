@@ -191,7 +191,7 @@ export const useStore = create<RailState>()((set, get) => {
 
         case 'platform.conflict': {
           const p = envelope.payload as PlatformConflict
-          set((s) => ({ conflicts: [...s.conflicts, p] }))
+          set((s) => ({ conflicts: [...s.conflicts, p].slice(-20) }))
           addFeed({
             kind: 'event',
             ts: envelope.ts,
