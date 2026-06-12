@@ -39,3 +39,4 @@ tmp/
 
 # Submission assets (kept outside repo)
 *.pdf
+.vercel
