@@ -2,7 +2,7 @@
 
 PORT ?= 8000
 
-dev: ## run backend + frontend together (override backend port: make dev PORT=8010)
+dev: ## run backend + frontend together (override port: make dev PORT=9000)
 	@trap 'kill 0' INT; \
 	(cd backend && uv run uvicorn app.main:app --reload --port $(PORT)) & \
 	(cd frontend && BACKEND_URL=http://localhost:$(PORT) pnpm dev) & \

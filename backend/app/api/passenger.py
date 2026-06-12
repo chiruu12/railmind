@@ -389,8 +389,13 @@ def _deepgram_tts(text: str) -> bytes:
     from deepgram import DeepgramClient
 
     client = DeepgramClient(api_key=settings.deepgram_api_key)
-    chunks = client.speak.v1.audio.generate(text=text[:1000], model=VOICE_TTS_MODEL, encoding="mp3")
-    return b"".join(chunks)
+    response = client.speak.v1.audio.generate(
+        text=text[:1000], model=VOICE_TTS_MODEL, encoding="mp3",
+    )
+    stream = getattr(response, "stream", None) or getattr(response, "stream_memory", None)
+    if stream is None:
+        raise RuntimeError("deepgram TTS returned no audio stream")
+    return stream.getvalue()
 
 
 # ── router ───────────────────────────────────────────────────────────────────
