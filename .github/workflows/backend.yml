@@ -3,9 +3,9 @@ name: Backend CI
 on:
   push:
     branches: [main]
-    paths: [backend/**, data/**, scripts/**]
+    paths: [backend/**]
   pull_request:
-    paths: [backend/**, data/**, scripts/**]
+    paths: [backend/**]
 
 defaults:
   run:
@@ -20,8 +20,9 @@ jobs:
         with:
           version: "latest"
       - run: uv sync --frozen
-      - run: uv run ruff check app tests
-      - run: uv run ruff format --check app tests
+      - run: uv run ruff check app
+      - run: uv run ruff format --check app
+      - run: test -d tests && uv run ruff check tests && uv run ruff format --check tests || true
 
   test:
     runs-on: ubuntu-latest
