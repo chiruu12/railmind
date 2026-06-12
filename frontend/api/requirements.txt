@@ -1,0 +1,11 @@
+fastapi>=0.115
+pydantic>=2.9
+pydantic-settings>=2.6
+sqlmodel>=0.0.22
+httpx>=0.28
+python-multipart>=0.0.12
+anthropic>=0.40
+openai>=1.55
+groq>=0.13
+deepgram-sdk>=3.7
+hive-agent @ git+https://github.com/chiruu12/Hive

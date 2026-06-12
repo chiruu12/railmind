@@ -5,12 +5,18 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { EventEnvelope, Topic, TopicPayloads } from './types'
+import { API_BASE } from '../lib/apiBase'
 
 export type EventHandler = (envelope: EventEnvelope) => void
 
 export function wsUrl(): string {
   const override = import.meta.env.VITE_WS_URL as string | undefined
   if (override) return override
+  if (API_BASE) {
+    const url = new URL(API_BASE)
+    const proto = url.protocol === 'https:' ? 'wss' : 'ws'
+    return `${proto}://${url.host}/ws`
+  }
   const proto = location.protocol === 'https:' ? 'wss' : 'ws'
   return `${proto}://${location.host}/ws`
 }

@@ -1,5 +1,7 @@
 # RailMind — Agentic Operating System for Indian Railways
 
+> **Live demo:** [railmind-demo.vercel.app](https://railmind-demo.vercel.app) — frontend + API hosted on Vercel (live updates via WebSocket require running locally)
+
 **A multi-agent control room for Indian Railways: autonomous Train, Station, Crew, and Passenger-Info agents negotiate over a live digital twin — detecting delays, reallocating platforms, swapping crews, and talking to passengers by voice — with every decision visible, overridable, and auditable.**
 
 Built for **FAR AWAY 2026** (Zuup international youth hackathon) on [**Hive**](https://github.com/chiruu12/Hive), our own open-source agent framework.

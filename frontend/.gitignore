@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.vercel
+
+# deploy-time copy of backend/app + data (synced by scripts/vercel_deploy.sh)
+api/_src
