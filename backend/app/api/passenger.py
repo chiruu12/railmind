@@ -269,9 +269,12 @@ def _context_blob(message: str, sim: Any) -> str:
     }
     train = _find_train(message, state)
     if train is not None and train.delay_min > 0:
-        cause = _delay_cause(sim, train.number)
-        if cause:
-            ctx["delay_cause"] = cause
+        # Match the template threshold (>= 5 min): below it a train reads as
+        # "on time", so the cause must not leak into the LLM context either.
+        if train.delay_min >= 5:
+            cause = _delay_cause(sim, train.number)
+            if cause:
+                ctx["delay_cause"] = cause
         try:
             ctx["downstream_impact"] = [
                 s.model_dump(mode="json")
