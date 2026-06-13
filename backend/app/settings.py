@@ -17,7 +17,9 @@ class Settings(BaseSettings):
     # Fast model for the hot agent loop (Groq) and quality model (Anthropic)
     groq_model: str = "llama-3.3-70b-versatile"
     anthropic_model: str = "claude-sonnet-4-6"
-    openai_model: str = "gpt-5-nano"
+    # gpt-4o-mini accepts the max_tokens param used by both our chat fallback and
+    # the Hive runtime; gpt-5* models reject it (require max_completion_tokens).
+    openai_model: str = "gpt-4o-mini"
 
     db_path: str = "railmind.sqlite"
     sim_speed: float = 1.0  # sim-minutes per real second
