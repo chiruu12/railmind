@@ -134,7 +134,8 @@ class FakeSim:
                 return [s for s in train.route if s.sched_arrival is not None]
         return []
 
-    def delay_causes(self) -> dict[str, str]:
+    @property
+    def delay_causes(self) -> dict[str, str]:  # property, matching SimEngine
         return {"12952": "signal failure at CNB"}
 
 
@@ -150,7 +151,8 @@ class BrokenSim:
     def project_downstream_impact(self, train_number: str, delay_min: int) -> list[StationStop]:
         raise RuntimeError("twin unavailable")
 
-    def delay_causes(self) -> dict[str, str]:
+    @property
+    def delay_causes(self) -> dict[str, str]:  # property, matching SimEngine
         raise RuntimeError("twin unavailable")
 
 

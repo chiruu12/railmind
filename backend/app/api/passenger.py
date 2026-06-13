@@ -87,9 +87,16 @@ def _safe_state(sim: Any) -> NetworkState | None:
 
 
 def _delay_cause(sim: Any, train_number: str) -> str | None:
-    """Reason the sim recorded for a train's delay, if any."""
+    """Reason the sim recorded for a train's delay, if any.
+
+    `SimEngine.delay_causes` is a property returning a dict; tolerate a callable
+    too so a duck-typed sim can expose either form.
+    """
     try:
-        return sim.delay_causes().get(train_number)
+        causes = sim.delay_causes
+        if callable(causes):
+            causes = causes()
+        return causes.get(train_number)
     except Exception:  # noqa: BLE001 — missing cause must never 500 the endpoint
         return None
 
