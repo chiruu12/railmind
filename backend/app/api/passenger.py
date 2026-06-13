@@ -35,7 +35,7 @@ MAX_SESSIONS = 50
 _sessions: dict[str, list[dict[str, str]]] = {}
 
 SYSTEM_PROMPT = (
-    "You are RailMind Yatri, a helpful Indian Railways passenger assistant. "
+    "You are Rail Saarthi, a helpful Indian Railways passenger assistant. "
     "Answer concisely (1-3 short sentences), in plain language. Use ONLY facts "
     "from the live network state provided with the question — never invent "
     "schedules, platforms, delays or trains. All times are IST. If a train is "

@@ -1,5 +1,5 @@
 /**
- * Passenger view (WS5) — "RailMind Yatri".
+ * Passenger view (WS5) — "Rail Saarthi".
  *
  * Mobile-frame page: centered ~390px phone bezel against the dimmed dark app,
  * light UI inside. My-train selector + live status card (folds train.status /
@@ -44,7 +44,7 @@ let nextId = 1
 const newId = () => nextId++
 
 const GREETING =
-  'Namaste! I am RailMind Yatri. Ask me about any train or station on this corridor — by text or voice.'
+  'Namaste! I am Rail Saarthi. Ask me about any train or station on this corridor — by text or voice.'
 
 const QUICK_REPLIES = [
   'Where is my train?',
@@ -288,9 +288,16 @@ export default function PassengerPage() {
 
         {/* header */}
         <header className="flex items-center justify-between bg-indigo-700 px-5 pb-3 pt-9 text-white">
-          <div>
-            <h1 className="text-lg font-bold leading-tight">RailMind Yatri</h1>
-            <p className="text-[11px] text-indigo-200">Live passenger assistant</p>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/brand/rail-saarthi-mark.png"
+              alt="Rail Saarthi"
+              className="h-9 w-9 rounded-full ring-1 ring-white/20"
+            />
+            <div>
+              <h1 className="text-lg font-bold leading-tight">Rail Saarthi</h1>
+              <p className="text-[11px] text-indigo-200">Live passenger assistant</p>
+            </div>
           </div>
           <button
             type="button"
