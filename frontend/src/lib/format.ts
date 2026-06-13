@@ -54,6 +54,29 @@ export function delayLabel(delayMin: number): string {
   return delayMin > 0 ? `+${delayMin} min` : 'on time'
 }
 
+/**
+ * Strip Markdown markup so LLM-authored agent text renders as clean plain text.
+ * The feed shows raw strings, so stray `**bold**`, `` `code` ``, links and
+ * bullets would otherwise leak their syntax into the UI.
+ */
+export function plainText(input: string): string {
+  return input
+    .replace(/```[^\n`]*\n?([\s\S]*?)```/g, '$1') // fenced code (drop lang tag, keep body)
+    .replace(/`([^`]+)`/g, '$1') // inline code
+    .replace(/!?\[([^\]]+)\]\([^)]*\)/g, '$1') // links / images → text
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // bold **
+    .replace(/(?<!\w)__([^_\n]+)__(?!\w)/g, '$1') // bold __ (skip snake_case)
+    .replace(/(?<!\w)\*([^*\n]+)\*(?!\w)/g, '$1') // italic *
+    .replace(/(?<!\w)_([^_\n]+)_(?!\w)/g, '$1') // italic _ (skip snake_case)
+    .replace(/~~(.*?)~~/g, '$1') // strikethrough
+    .replace(/^\s{0,3}#{1,6}\s+/gm, '') // headings
+    .replace(/^\s*>\s?/gm, '') // blockquotes
+    .replace(/^\s*[-*+]\s+/gm, '') // unordered bullets
+    .replace(/^\s*\d+[.)]\s+/gm, '') // ordered list markers
+    .replace(/[ \t]+\n/g, '\n') // trailing spaces
+    .trim()
+}
+
 /** Next scheduled stop (delay-adjusted) strictly after the current sim time. */
 export function nextStopOf(
   train: Train,
