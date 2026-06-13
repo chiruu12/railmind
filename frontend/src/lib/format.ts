@@ -3,7 +3,7 @@
  * All domain timestamps are naive IST sim-time ISO strings (docs/CONTRACTS.md).
  */
 
-import type { Station, Train } from '../api/types'
+import type { ScenarioType, Station, Train } from '../api/types'
 
 /** Shift a naive ISO datetime string by N minutes (string-safe, no TZ surprises). */
 export function shiftIso(iso: string, minutes: number): string {
@@ -75,6 +75,33 @@ export function plainText(input: string): string {
     .replace(/^\s*\d+[.)]\s+/gm, '') // ordered list markers
     .replace(/[ \t]+\n/g, '\n') // trailing spaces
     .trim()
+}
+
+/**
+ * Human-readable one-liner for an injected scenario, instead of raw JSON params.
+ * Falls back to the scenario type name if a required param is missing (so a
+ * malformed payload never renders literal "undefined"); optional fields like
+ * `cause` and `duration_min` are omitted when absent.
+ */
+export function scenarioLabel(type: ScenarioType | string, params: Record<string, unknown>): string {
+  const p = params as Record<string, string | number | undefined>
+  const generic = String(type).replace(/_/g, ' ')
+  switch (type) {
+    case 'delay':
+      if (p.train_number == null || p.delay_min == null) return generic
+      return `${p.delay_min}-min delay on ${p.train_number}${p.cause ? ` (${p.cause})` : ''}`
+    case 'platform_block':
+      if (p.platform == null || p.station_code == null) return generic
+      return (
+        `platform ${p.platform} blocked at ${p.station_code}` +
+        (p.duration_min ? ` for ${p.duration_min} min` : '')
+      )
+    case 'crew_sick':
+      if (p.crew_id == null) return generic
+      return `crew ${p.crew_id} reported sick`
+    default:
+      return generic
+  }
 }
 
 /** Next scheduled stop (delay-adjusted) strictly after the current sim time. */
