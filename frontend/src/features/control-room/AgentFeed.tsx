@@ -3,6 +3,7 @@ import clsx from 'clsx'
 import type { FeedItem, FeedTone } from '../../store'
 import { useStore } from '../../store'
 import { agentTheme } from '../../lib/agents'
+import { plainText } from '../../lib/format'
 import { resolveDecision } from '../../lib/http'
 
 function wallTime(ts: string): string {
@@ -62,7 +63,7 @@ function DecisionCard({ decisionId }: { decisionId: string }) {
         </span>
       </div>
       <p className="text-[11px] leading-snug text-zinc-500">
-        <span className="font-semibold text-zinc-400">Trigger:</span> {decision.trigger}
+        <span className="font-semibold text-zinc-400">Trigger:</span> {plainText(decision.trigger)}
       </p>
       <ul className="space-y-1">
         {decision.options_considered.map((option) => {
@@ -78,13 +79,13 @@ function DecisionCard({ decisionId }: { decisionId: string }) {
               )}
             >
               <span className="shrink-0">{chosen ? '✓' : '·'}</span>
-              <span>{option}</span>
+              <span>{plainText(option)}</span>
             </li>
           )
         })}
       </ul>
       <p className="border-l-2 border-zinc-700 pl-2 text-[11px] italic leading-snug text-zinc-400">
-        {decision.rationale}
+        {plainText(decision.rationale)}
       </p>
       {decision.status === 'proposed' && (
         <div className="flex gap-2 pt-0.5">
@@ -119,7 +120,7 @@ function FeedRow({ item }: { item: FeedItem }) {
               {wallTime(item.ts)}
             </span>
           </div>
-          <p className="pl-1 text-[11px] leading-snug text-zinc-300">{item.text}</p>
+          <p className="pl-1 text-[11px] leading-snug text-zinc-300">{plainText(item.text)}</p>
         </div>
       )
     case 'decision':
@@ -128,7 +129,7 @@ function FeedRow({ item }: { item: FeedItem }) {
       return (
         <div className="feed-in flex items-start gap-2 rounded-sm bg-zinc-900/50 px-1.5 py-1">
           <span className={clsx('mt-1 h-1.5 w-1.5 shrink-0 rounded-full', TONE_DOT[item.tone])} />
-          <p className="text-[10px] leading-snug text-zinc-400">{item.label}</p>
+          <p className="text-[10px] leading-snug text-zinc-400">{plainText(item.label)}</p>
         </div>
       )
   }
