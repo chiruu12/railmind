@@ -1,22 +1,27 @@
 # Render Blueprint — RailMind backend (always-on FastAPI: WebSocket + sim loop).
 # Free web service. Spins down after ~15 min idle; wake it before a demo.
-# Deploy: push to GitHub, then "New + > Blueprint" in the Render dashboard and
-# point it at this repo. Set the *_API_KEY secrets in the dashboard afterwards.
+#
+# Deploy (do this via Blueprint, NOT a manual service):
+#   Render dashboard → New + → Blueprint → pick chiruu12/railmind →
+#   it reads this file and creates the service on branch `main`.
+#   Then set the *_API_KEY secrets in the dashboard (sync: false below).
 
 services:
   - type: web
     name: railmind-backend
     runtime: docker
-    branch: main
+    branch: main # deploy from main only
+    autoDeploy: true # redeploy automatically on every push to main
     dockerfilePath: ./backend/Dockerfile
-    dockerContext: .
+    dockerContext: . # build context is the repo root (Dockerfile copies backend/ + data/)
     plan: free
     region: singapore
     healthCheckPath: /health
     envVars:
-      # Flip to "on" once the API keys below are set, for LLM-backed rationale.
       - key: AGENT_LLM
-        value: "off"
+        value: "on" # LLM-backed rationale; needs the API keys below
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini # accepts max_tokens (gpt-5* models reject it)
       - key: DATA_DIR
         value: /data
       - key: DB_PATH
