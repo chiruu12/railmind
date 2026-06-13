@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 
 from app.agents.adapter import AgentRuntime
-from app.agents.base import BaseAgent
+from app.agents.base import BaseAgent, strip_markdown
 from app.contracts.entities import AlertSeverity, DecisionStatus
 from app.contracts.events import CrewSwapped, DelayDetected, PassengerAlert, PlatformReassigned
 
@@ -22,7 +22,8 @@ INSTRUCTIONS = (
     "You are the Passenger Information Agent for Indian Railways. Convert internal "
     "operational events into a single short, calm, helpful passenger announcement "
     "(max 2 sentences). Include train number, what changed, and what passengers should "
-    "do. Never mention internal jargon (agents, decisions, duty rules)."
+    "do. Never mention internal jargon (agents, decisions, duty rules). "
+    "Reply in plain text only — no markdown, bold, headings or bullet points."
 )
 
 
@@ -133,7 +134,7 @@ class PassengerInfoAgent(BaseAgent):
             "Write the passenger announcement for this event.",
             context={**facts, "fallback": template},
         )
-        message = str(message).strip() or template
+        message = strip_markdown(str(message).strip()) or template
         decision = await self.propose(
             trigger=trigger,
             options_considered=[f"broadcast via {'/'.join(channels)}"],
