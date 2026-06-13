@@ -1,8 +1,10 @@
 /**
- * Passenger feature API (WS5) — relative /api fetches, proxied to :8000 in dev.
+ * Passenger feature API (WS5) — /api fetches prefixed with API_BASE
+ * ('' in dev → Vite proxy to :8000; Render origin in prod).
  */
 
 import type { NetworkState } from '../../api/types'
+import { apiUrl } from '../../lib/config'
 
 export interface ChatResponse {
   reply: string
@@ -32,7 +34,7 @@ function withTimeout(ms: number, signal?: AbortSignal): AbortSignal {
 }
 
 export function fetchState(): Promise<NetworkState> {
-  return fetch('/api/state', { signal: withTimeout(8000) }).then((res) =>
+  return fetch(apiUrl('/api/state'), { signal: withTimeout(8000) }).then((res) =>
     asJson<NetworkState>(res),
   )
 }
@@ -42,7 +44,7 @@ export function postChat(
   sessionId: string,
   trainNumber?: string | null,
 ): Promise<ChatResponse> {
-  return fetch('/api/chat', {
+  return fetch(apiUrl('/api/chat'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, session_id: sessionId, train_number: trainNumber ?? undefined }),
@@ -59,7 +61,7 @@ export function postVoice(
   form.append('audio', audio, 'clip.webm')
   form.append('session_id', sessionId)
   if (trainNumber) form.append('train_number', trainNumber)
-  return fetch('/api/voice', { method: 'POST', body: form, signal: withTimeout(45000) }).then(
+  return fetch(apiUrl('/api/voice'), { method: 'POST', body: form, signal: withTimeout(45000) }).then(
     (res) => asJson<VoiceResponse>(res),
   )
 }

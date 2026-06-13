@@ -13,6 +13,10 @@ build/
 .next/
 .turbo/
 
+# Deploy / local DB
+.vercel/
+*.sqlite
+
 # Environment
 .env
 .env.local

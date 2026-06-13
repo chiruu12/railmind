@@ -1,12 +1,14 @@
 /**
  * Thin REST helpers over the backend API (src/api/ is frozen, so this lives here).
- * All paths are relative — the Vite dev server proxies /api to :8000.
+ * Paths are prefixed with API_BASE: '' in dev (Vite proxies /api to :8000),
+ * the Render backend origin in prod.
  */
 
 import type { NetworkState, ScenarioType } from '../api/types'
+import { apiUrl } from './config'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, init)
+  const res = await fetch(apiUrl(path), init)
   if (!res.ok) {
     throw new Error(`${init?.method ?? 'GET'} ${path} failed (${res.status})`)
   }
