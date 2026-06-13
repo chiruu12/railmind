@@ -40,7 +40,8 @@ SYSTEM_PROMPT = (
     "from the live network state provided with the question — never invent "
     "schedules, platforms, delays or trains. All times are IST. If a train is "
     "delayed, state the delay and suggest a concrete alternative from the "
-    "provided state when one exists. If the question is outside live train or "
+    "provided state when one exists. If a delay_cause is given for the train, "
+    "state the reason for the delay. If the question is outside live train or "
     "station information, briefly say what you can help with. "
     "If the user writes or speaks in Hindi or Hinglish, reply in the same language. "
     "Never use markdown formatting — no bold, no italics, no bullet points. "
@@ -82,6 +83,14 @@ def _safe_state(sim: Any) -> NetworkState | None:
         return sim.state()
     except Exception:  # noqa: BLE001 — sim issues must not 500 the endpoint
         logger.exception("passenger: sim.state() failed")
+        return None
+
+
+def _delay_cause(sim: Any, train_number: str) -> str | None:
+    """Reason the sim recorded for a train's delay, if any."""
+    try:
+        return sim.delay_causes().get(train_number)
+    except Exception:  # noqa: BLE001 — missing cause must never 500 the endpoint
         return None
 
 
@@ -171,7 +180,7 @@ def _alternatives(state: NetworkState, train: Train, station_code: str, eta: dat
 # ── deterministic template answers (AGENT_LLM=off / provider failure) ────────
 
 
-def _train_reply(state: NetworkState, train: Train) -> str:
+def _train_reply(state: NetworkState, train: Train, cause: str | None = None) -> str:
     if train.status == TrainStatus.TERMINATED:
         return f"Train {train.number} {train.name} has completed its journey."
     if train.status == TrainStatus.SCHEDULED:
@@ -185,6 +194,8 @@ def _train_reply(state: NetworkState, train: Train) -> str:
 
     if train.delay_min >= 5:
         status = f"is running {train.delay_min} min late"
+        if cause:
+            status += f" ({cause})"
     else:
         status = "is running on time"
 
@@ -228,7 +239,7 @@ def _template_reply(message: str, sim: Any) -> str:
         return FALLBACK_REPLY
     train = _find_train(message, state)
     if train is not None:
-        return _train_reply(state, train)
+        return _train_reply(state, train, _delay_cause(sim, train.number))
     station = _find_station_code(message, state)
     if station is not None:
         return _station_reply(state, sim, station)
@@ -258,6 +269,12 @@ def _context_blob(message: str, sim: Any) -> str:
     }
     train = _find_train(message, state)
     if train is not None and train.delay_min > 0:
+        # Match the template threshold (>= 5 min): below it a train reads as
+        # "on time", so the cause must not leak into the LLM context either.
+        if train.delay_min >= 5:
+            cause = _delay_cause(sim, train.number)
+            if cause:
+                ctx["delay_cause"] = cause
         try:
             ctx["downstream_impact"] = [
                 s.model_dump(mode="json")

@@ -134,6 +134,9 @@ class FakeSim:
                 return [s for s in train.route if s.sched_arrival is not None]
         return []
 
+    def delay_causes(self) -> dict[str, str]:
+        return {"12952": "signal failure at CNB"}
+
 
 class BrokenSim:
     """Sim whose every read fails — endpoints must still answer 200."""
@@ -145,6 +148,9 @@ class BrokenSim:
         raise RuntimeError("twin unavailable")
 
     def project_downstream_impact(self, train_number: str, delay_min: int) -> list[StationStop]:
+        raise RuntimeError("twin unavailable")
+
+    def delay_causes(self) -> dict[str, str]:
         raise RuntimeError("twin unavailable")
 
 

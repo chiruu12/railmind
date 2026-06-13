@@ -45,10 +45,17 @@ def test_delayed_train_suggests_alternative():
     assert "12302" in reply
 
 
+def test_delayed_train_reply_states_cause():
+    reply = _chat(make_client(), "Why is train 12952 late?")
+    assert "25 min late" in reply
+    assert "signal failure at CNB" in reply  # cause surfaced from the twin
+
+
 def test_on_time_train():
     reply = _chat(make_client(), "What about train 12302?")
     assert "12302" in reply
     assert "on time" in reply
+    assert "(" not in reply  # no cause appended for an on-time train
 
 
 def test_train_name_lookup():
