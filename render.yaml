@@ -7,6 +7,7 @@ services:
   - type: web
     name: railmind-backend
     runtime: docker
+    branch: main
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     plan: free
