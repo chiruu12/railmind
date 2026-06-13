@@ -1,0 +1,32 @@
+# Render Blueprint — RailMind backend (always-on FastAPI: WebSocket + sim loop).
+# Free web service. Spins down after ~15 min idle; wake it before a demo.
+# Deploy: push to GitHub, then "New + > Blueprint" in the Render dashboard and
+# point it at this repo. Set the *_API_KEY secrets in the dashboard afterwards.
+
+services:
+  - type: web
+    name: railmind-backend
+    runtime: docker
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      # Flip to "on" once the API keys below are set, for LLM-backed rationale.
+      - key: AGENT_LLM
+        value: "off"
+      - key: DATA_DIR
+        value: /data
+      - key: DB_PATH
+        value: /tmp/railmind.sqlite
+      # Secrets — set values in the Render dashboard (sync: false keeps them out of git).
+      - key: GROQ_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEEPGRAM_API_KEY
+        sync: false
