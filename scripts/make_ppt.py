@@ -77,8 +77,6 @@ def run(p, text, *, size, color=WHITE, bold=False, italic=False, font="Calibri",
     r.font.name = font
     r.font.color.rgb = color
     if spacing is not None:
-        from pptx.oxml.ns import qn
-
         rPr = r._r.get_or_add_rPr()
         rPr.set("spc", str(int(spacing * 100)))
     return r
@@ -339,7 +337,7 @@ rect(s, 0.7, 5.85, 11.9, 0.7, fill=PANEL, line=LINE)
 tf = textbox(s, 0.7, 5.85, 11.9, 0.7, anchor=MSO_ANCHOR.MIDDLE, align=PP_ALIGN.CENTER)
 p = para(tf, first=True, align=PP_ALIGN.CENTER)
 run(p, "Stack:  ", size=13, color=MUTE, bold=True)
-run(p, "Python services  ·  event bus  ·  PostgreSQL  ·  React frontend  ·  Hive agent framework",
+run(p, "FastAPI  ·  in-process event bus  ·  SQLite  ·  React  ·  Hive agents",
     size=13, color=WHITE)
 page_no(s, 5)
 
@@ -409,4 +407,4 @@ page_no(s, 7)
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 prs.save(str(OUT))
-print(f"saved {OUT}  ({len(prs.slides.__iter__.__self__._sldIdLst)} slides)")
+print(f"saved {OUT}  ({len(prs.slides)} slides)")
