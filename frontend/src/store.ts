@@ -30,7 +30,7 @@ import type {
   TrainStatus,
   TrainStatusChanged,
 } from './api/types'
-import { shiftIso } from './lib/format'
+import { scenarioLabel, shiftIso } from './lib/format'
 
 const FEED_CAP = 200
 const ALERT_CAP = 30
@@ -328,7 +328,7 @@ export const useStore = create<RailState>()((set, get) => {
             kind: 'event',
             ts: envelope.ts,
             topic: envelope.topic,
-            label: `Scenario injected — ${p.scenario_type}: ${JSON.stringify(p.params)}`,
+            label: `Scenario — ${scenarioLabel(p.scenario_type, p.params)}`,
             tone: 'info',
           })
           return
