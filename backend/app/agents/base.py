@@ -7,6 +7,7 @@ adapter. All domain time comes from sim.state().sim_time (never wall clock).
 from __future__ import annotations
 
 import logging
+import re
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -26,6 +27,30 @@ from app.contracts.events import AgentThought, DecisionProposed
 logger = logging.getLogger(__name__)
 
 COOLDOWN_SEC = 120.0  # identical trigger suppressed within this many sim-seconds
+
+
+def strip_markdown(text: str) -> str:
+    """Flatten LLM-authored text to plain text for the feed, passenger app and TTS.
+
+    Agents occasionally emit Markdown (``**bold**``, ``# heading``, lists); those
+    markers must never reach passengers (read aloud) or the UI. No-op on plain
+    text, so deterministic templates pass through unchanged. Word-boundary guards
+    keep ``snake_case`` identifiers (``delay_min``) intact.
+    """
+    text = re.sub(r"```[^\n`]*\n?(.*?)```", r"\1", text, flags=re.S)  # fenced code
+    text = re.sub(r"`([^`]+)`", r"\1", text)  # inline code
+    text = re.sub(r"!?\[([^\]]+)\]\([^)]*\)", r"\1", text)  # links / images
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1", text)  # bold **
+    text = re.sub(r"(?<!\w)__([^_\n]+)__(?!\w)", r"\1", text)  # bold __
+    text = re.sub(r"(?<!\w)\*([^*\n]+)\*(?!\w)", r"\1", text)  # italic *
+    text = re.sub(r"(?<!\w)_([^_\n]+)_(?!\w)", r"\1", text)  # italic _
+    text = re.sub(r"~~([^~]+)~~", r"\1", text)  # strikethrough
+    text = re.sub(r"^\s{0,3}#{1,6}\s+", "", text, flags=re.M)  # headings
+    text = re.sub(r"^\s*>\s?", "", text, flags=re.M)  # blockquotes
+    text = re.sub(r"^\s*[-*+]\s+", "", text, flags=re.M)  # unordered bullets
+    text = re.sub(r"^\s*\d+[.)]\s+", "", text, flags=re.M)  # ordered list markers
+    return text.strip()
+
 
 RetryFn = Callable[[set[str]], Awaitable[None]]
 
@@ -127,7 +152,9 @@ class BaseAgent:
 
     async def think(self, text: str, decision_id: str | None = None) -> None:
         """Publish one streamed reasoning step to the live agent feed."""
-        await self.bus.publish(AgentThought(agent=self.name, text=text, decision_id=decision_id))
+        await self.bus.publish(
+            AgentThought(agent=self.name, text=strip_markdown(text), decision_id=decision_id)
+        )
 
     async def propose(
         self,
@@ -154,8 +181,8 @@ class BaseAgent:
             agent=self.name,
             trigger=trigger,
             options_considered=options_considered,
-            chosen=chosen,
-            rationale=rationale,
+            chosen=strip_markdown(chosen),
+            rationale=strip_markdown(rationale),
             status=status,
         )
         self.ledger.record(
