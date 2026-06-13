@@ -61,15 +61,18 @@ export function delayLabel(delayMin: number): string {
  */
 export function plainText(input: string): string {
   return input
-    .replace(/```[\s\S]*?```/g, (m) => m.replace(/```/g, '').trim()) // fenced code
+    .replace(/```[^\n`]*\n?([\s\S]*?)```/g, '$1') // fenced code (drop lang tag, keep body)
     .replace(/`([^`]+)`/g, '$1') // inline code
     .replace(/!?\[([^\]]+)\]\([^)]*\)/g, '$1') // links / images → text
-    .replace(/(\*\*|__)(.*?)\1/g, '$2') // bold
-    .replace(/(\*|_)(.*?)\1/g, '$2') // italic
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // bold **
+    .replace(/(?<!\w)__([^_\n]+)__(?!\w)/g, '$1') // bold __ (skip snake_case)
+    .replace(/(?<!\w)\*([^*\n]+)\*(?!\w)/g, '$1') // italic *
+    .replace(/(?<!\w)_([^_\n]+)_(?!\w)/g, '$1') // italic _ (skip snake_case)
     .replace(/~~(.*?)~~/g, '$1') // strikethrough
     .replace(/^\s{0,3}#{1,6}\s+/gm, '') // headings
     .replace(/^\s*>\s?/gm, '') // blockquotes
-    .replace(/^\s*[-*+]\s+/gm, '') // bullet markers
+    .replace(/^\s*[-*+]\s+/gm, '') // unordered bullets
+    .replace(/^\s*\d+[.)]\s+/gm, '') // ordered list markers
     .replace(/[ \t]+\n/g, '\n') // trailing spaces
     .trim()
 }
