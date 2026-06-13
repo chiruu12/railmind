@@ -1,4 +1,4 @@
-# RailMind — Agentic OS for Indian Railways
+# Rail Saarthi — Agentic OS for Indian Railways
 
 Hackathon MVP (FAR AWAY 2026, submission ~June 14). Multi-agent control room over a simulated railway corridor: Train/Station/Crew/Passenger agents negotiate delays, platforms, and crew swaps on a live digital twin.
 

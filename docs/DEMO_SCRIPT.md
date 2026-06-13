@@ -1,4 +1,4 @@
-# RailMind — 3-Minute Demo Runbook
+# Rail Saarthi — 3-Minute Demo Runbook
 
 Exact beats, clicks, and spoken lines for the live demo / submission video. Total runtime: ~3:00.
 
@@ -20,7 +20,7 @@ Exact beats, clicks, and spoken lines for the live demo / submission video. Tota
 
 Map with moving trains, platform Gantt, empty-ish agent feed.
 
-> "This is RailMind — a multi-agent control room for Indian Railways, running on a live digital twin of the Delhi–Kanpur–Prayagraj corridor. Eight real trains, four stations, and a team of AI agents watching every one of them. Indian Railways moves 19 million passengers a day, and punctuality has fallen from 94 to under 74 percent — because when one train slips, humans untangle the cascade by hand. Watch what agents do instead."
+> "This is Rail Saarthi — a multi-agent control room for Indian Railways, running on a live digital twin of the Delhi–Kanpur–Prayagraj corridor. Eight real trains, four stations, and a team of AI agents watching every one of them. Indian Railways moves 19 million passengers a day, and punctuality has fallen from 94 to under 74 percent — because when one train slips, humans untangle the cascade by hand. Watch what agents do instead."
 
 ### 0:30 — Inject the delay
 
@@ -74,7 +74,7 @@ Wait for the spoken TTS reply (it answers from live twin data: current position,
 
 ### 2:40 — KPI close (Tab 1, KPI panel)
 
-> "And the bottom line: the KPI panel compares this run against a naive no-agent baseline — knock-on delay avoided, trains platformed without waiting, every decision counted and auditable. We built this on Hive, our own open-source agent framework. One corridor today; the architecture — deterministic rules that validate, LLMs that decide, humans that override — is built to scale to the real network. This is RailMind."
+> "And the bottom line: the KPI panel compares this run against a naive no-agent baseline — knock-on delay avoided, trains platformed without waiting, every decision counted and auditable. We built this on Hive, our own open-source agent framework. One corridor today; the architecture — deterministic rules that validate, LLMs that decide, humans that override — is built to scale to the real network. This is Rail Saarthi."
 
 — End at ~3:00.
 
@@ -99,5 +99,5 @@ Wait for the spoken TTS reply (it answers from live twin data: current position,
   5. Decision card Reject (override) + recompute
   6. Passenger view voice round-trip **with audible TTS reply**
   7. KPI panel close-up
-  8. 2-second end card: RailMind + Hive repo URL (github.com/chiruu12/Hive)
+  8. 2-second end card: Rail Saarthi + Hive repo URL (github.com/chiruu12/Hive)
 - Keep one full successful screen recording as the disaster-recovery video for the live demo.

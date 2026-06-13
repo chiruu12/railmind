@@ -9,9 +9,14 @@ export default function ControlRoomPage() {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <header className="flex items-center gap-4 border-b border-zinc-800 bg-zinc-950/95 px-4 py-2">
-        <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2">
+          <img
+            src="/brand/rail-saarthi-mark.png"
+            alt="Rail Saarthi"
+            className="h-7 w-7 rounded-full"
+          />
           <h1 className="text-base font-bold tracking-tight text-zinc-100">
-            Rail<span className="text-amber-400">Mind</span>
+            Rail <span className="text-amber-400">Saarthi</span>
           </h1>
           <span className="hidden text-[10px] font-medium uppercase tracking-widest text-zinc-600 lg:block">
             NDLS – CNB – PRYJ – DDU corridor

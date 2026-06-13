@@ -1,4 +1,4 @@
-"""RailMind backend entrypoint (WS2).
+"""Rail Saarthi backend entrypoint (WS2).
 
 create_app() wires, inside a lifespan handler:
 
@@ -91,7 +91,7 @@ def create_app(db_path: str | None = None, wire_workstreams: bool = True) -> Fas
                     logger.exception("sim pause on shutdown failed")
             audit.close()
 
-    app = FastAPI(title="RailMind — IR Agent OS", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="Rail Saarthi — IR Agent OS", version="0.1.0", lifespan=lifespan)
 
     app.add_middleware(
         CORSMiddleware,

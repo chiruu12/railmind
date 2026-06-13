@@ -1,10 +1,10 @@
-# RailMind — Submission Pitch Pack
+# Rail Saarthi — Submission Pitch Pack
 
 Copy-paste-ready text for the FAR AWAY 2026 submission form, plus judge Q&A prep.
 
 ## 100-word description
 
-RailMind is a multi-agent control room for Indian Railways. Autonomous Train, Station, Crew, and Passenger-Info agents negotiate over a live digital twin of the Delhi–Kanpur–Prayagraj corridor: detecting delays, reallocating platforms, swapping crews, and alerting passengers by text and voice — with every decision streamed live, human-overridable, and audit-logged. The safety architecture is the core innovation: deterministic rules compute what's feasible, LLMs choose among safe options and explain why, so an unsafe action is structurally impossible. Built on Hive, our own open-source agent framework, addressing a network of 19 million daily passengers whose punctuality has fallen below 74%.
+Rail Saarthi is a multi-agent control room for Indian Railways. Autonomous Train, Station, Crew, and Passenger-Info agents negotiate over a live digital twin of the Delhi–Kanpur–Prayagraj corridor: detecting delays, reallocating platforms, swapping crews, and alerting passengers by text and voice — with every decision streamed live, human-overridable, and audit-logged. The safety architecture is the core innovation: deterministic rules compute what's feasible, LLMs choose among safe options and explain why, so an unsafe action is structurally impossible. Built on Hive, our own open-source agent framework, addressing a network of 19 million daily passengers whose punctuality has fallen below 74%.
 
 *(~100 words)*
 
@@ -12,11 +12,11 @@ RailMind is a multi-agent control room for Indian Railways. Autonomous Train, St
 
 Indian Railways moves 19 million passengers daily across 69,000 km, yet punctuality has collapsed from ~94.2% (2020) to ~73.6% (2023). Over 80% of critical routes run beyond capacity, so a single delayed train cascades into platform conflicts, crew duty-hour violations, and uninformed passengers — and today, humans untangle every cascade by phone and intuition.
 
-RailMind puts a team of AI agents in the control room. On a live digital twin of the New Delhi–Kanpur–Prayagraj–DDU corridor (8 real trains, 4 stations), autonomous agents handle disruption end to end: a Train Agent detects a delay and projects downstream impact; the Station Agent finds the platform conflict and negotiates a reassignment; the Crew Agent catches the 9-hour duty breach and schedules a swap with a spare crew; an Orchestrator approves; the Passenger-Info Agent broadcasts alerts — and passengers can literally ask the system "Where is my train?" by voice (Deepgram STT/TTS).
+Rail Saarthi puts a team of AI agents in the control room. On a live digital twin of the New Delhi–Kanpur–Prayagraj–DDU corridor (8 real trains, 4 stations), autonomous agents handle disruption end to end: a Train Agent detects a delay and projects downstream impact; the Station Agent finds the platform conflict and negotiates a reassignment; the Crew Agent catches the 9-hour duty breach and schedules a swap with a spare crew; an Orchestrator approves; the Passenger-Info Agent broadcasts alerts — and passengers can literally ask the system "Where is my train?" by voice (Deepgram STT/TTS).
 
-Three design choices set RailMind apart. First, safety: deterministic rules (headway buffers, duty math) compute the feasible options; LLMs only choose among them and explain their reasoning — infeasible actions are structurally impossible. Second, transparency: every agent's reasoning streams live to the dashboard, every decision is human-overridable, and everything persists to an audit log. Third, foundation: it runs on Hive, our own open-source agent framework.
+Three design choices set Rail Saarthi apart. First, safety: deterministic rules (headway buffers, duty math) compute the feasible options; LLMs only choose among them and explain their reasoning — infeasible actions are structurally impossible. Second, transparency: every agent's reasoning streams live to the dashboard, every decision is human-overridable, and everything persists to an audit log. Third, foundation: it runs on Hive, our own open-source agent framework.
 
-Research shows multi-agent dispatch can lift network throughput ~34% over naive methods. RailMind is the working, watchable, override-able version of that idea — one corridor today, architected for the network tomorrow.
+Research shows multi-agent dispatch can lift network throughput ~34% over naive methods. Rail Saarthi is the working, watchable, override-able version of that idea — one corridor today, architected for the network tomorrow.
 
 *(~245 words)*
 

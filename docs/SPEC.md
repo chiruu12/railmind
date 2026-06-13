@@ -1,6 +1,6 @@
 # IR Agent OS — Build Spec (Hackathon MVP)
 
-**Product name:** RailMind — Agentic Operating System for Indian Railways
+**Product name:** Rail Saarthi — Agentic Operating System for Indian Railways
 **Hackathon:** FAR AWAY 2026 (Zuup) — online build round, submission window ends ~June 14
 **Today:** June 12 → **~2 build days. Every decision below is optimized for a working, demoable product, not production scale.**
 

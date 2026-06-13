@@ -1,4 +1,4 @@
-# RailMind — Agentic Operating System for Indian Railways
+# Rail Saarthi — Agentic Operating System for Indian Railways
 
 > **Live demo:** [railmind-demo.vercel.app](https://railmind-demo.vercel.app) — frontend + API hosted on Vercel (live updates via WebSocket require running locally)
 
@@ -18,9 +18,9 @@ Indian Railways runs one of the largest, most complex rail networks on Earth —
 
 Today those cascades are untangled by hand: controllers on phones, station masters re-platforming ad hoc, crew planners reassigning rosters with limited situational awareness. Research on multi-agent dispatch suggests the headroom is enormous — junction-level multi-agent systems have shown **~34% throughput gains over naive dispatching** in published studies.
 
-## What RailMind does
+## What Rail Saarthi does
 
-RailMind runs a live digital twin of the New Delhi → Kanpur → Prayagraj → Deen Dayal Upadhyaya (Mughalsarai) corridor — 4 stations, 8 trains with real numbers and names — and puts a team of AI agents in the control room:
+Rail Saarthi runs a live digital twin of the New Delhi → Kanpur → Prayagraj → Deen Dayal Upadhyaya (Mughalsarai) corridor — 4 stations, 8 trains with real numbers and names — and puts a team of AI agents in the control room:
 
 1. An operator injects a disruption (e.g. *delay the Howrah Rajdhani by 25 minutes*) with one click.
 2. The agent cascade fires **visibly, live, in the activity feed**: the Train Agent projects downstream impact → the Station Agent detects a platform conflict and negotiates a reassignment → the Crew Agent flags a duty-hour breach and proposes a swap → the Orchestrator reviews and approves → the Passenger Info Agent broadcasts alerts. Each step streams the agent's actual reasoning.
@@ -62,7 +62,7 @@ The sim engine advances the twin (1 sim-minute per real second, adjustable), eve
 
 ## The safety principle: rules validate, LLMs decide
 
-RailMind never lets a language model invent an operational action. The split is strict:
+Rail Saarthi never lets a language model invent an operational action. The split is strict:
 
 - **Deterministic core** — platform feasibility (no overlapping occupancy within a 5-minute headway buffer), crew duty math (max 9-hour duty, swaps only where a spare crew is based), and ETA projection are computed by plain rules over twin state. Guaranteed correct.
 - **LLM layer** — agents choose *between* rule-validated candidate options, negotiate priorities, and explain their reasoning in plain language.
