@@ -162,7 +162,7 @@ p = para(tf, first=True, line=1.05)
 run(p, "India's railways are falling behind, ", size=40, color=WHITE, bold=True)
 run(p, "on time.", size=40, color=AMBER, bold=True)
 
-# big stat block: vertical comparison (older above, current below)
+# big stat block — vertical comparison (older above, current below)
 rect(s, 0.7, 3.0, 6.0, 3.2, fill=PANEL, line=LINE)
 tf = textbox(s, 1.1, 3.4, 5.4, 0.4)
 run(para(tf, first=True), "ON-TIME PERFORMANCE, KEY ROUTES", size=13, color=MUTE, bold=True, spacing=1.5)
