@@ -1,7 +1,8 @@
 """Generate the Rail Saarthi pitch deck (docs/Rail_Saarthi_Pitch.pptx).
 
 Branded 16:9 deck matching the logo palette (dark navy + electric blue +
-amber). Content per the agreed 7-slide outline, plus a cover. Run:
+amber). Eight content slides (problem, pain points, solution, control-room
+demo, passenger app, architecture, impact, roadmap) plus a cover. Run:
 
     python3 scripts/make_ppt.py
 """
@@ -14,7 +15,19 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.oxml.ns import qn
 from pptx.util import Emu, Pt
+
+
+def _strip_theme_style(shape) -> None:
+    """Drop the <p:style> element so a shape renders with ONLY its explicit
+    fill/line — no inherited theme drop-shadow, fill, line or font color.
+    Without this, autoshapes pick up the Office theme's effectRef (a muddy
+    drop shadow) which looks terrible on the dark deck."""
+    el = shape._element
+    style = el.find(qn("p:style"))
+    if style is not None:
+        el.remove(style)
 
 ROOT = Path(__file__).resolve().parent.parent
 BRAND = ROOT / "frontend" / "public" / "brand"
@@ -47,6 +60,7 @@ def slide(prs: Presentation):
     bg.fill.fore_color.rgb = NAVY
     bg.line.fill.background()
     bg.shadow.inherit = False
+    _strip_theme_style(bg)
     # send to back
     sp = bg._element
     sp.getparent().remove(sp)
@@ -68,7 +82,7 @@ def textbox(s, x, y, w, h, *, anchor=MSO_ANCHOR.TOP, align=PP_ALIGN.LEFT):
     return tf
 
 
-def run(p, text, *, size, color=WHITE, bold=False, italic=False, font="Calibri", spacing=None):
+def run(p, text, *, size, color=WHITE, bold=False, italic=False, font="Arial", spacing=None):
     r = p.add_run()
     r.text = text
     r.font.size = Pt(size)
@@ -102,6 +116,7 @@ def rect(s, x, y, w, h, *, fill=PANEL, line=LINE, line_w=1.0, shape=MSO_SHAPE.RO
         sh.line.color.rgb = line
         sh.line.width = Pt(line_w)
     sh.shadow.inherit = False
+    _strip_theme_style(sh)
     try:
         sh.adjustments[0] = radius
     except (IndexError, KeyError):
@@ -300,7 +315,42 @@ for t, b in callouts:
 page_no(s, 4)
 
 
-# ── Slide 5 — Architecture ────────────────────────────────────────────────────
+# ── Slide 5 — Passenger app ───────────────────────────────────────────────────
+s = slide(prs)
+chip(s, 0.7, 0.6, "Passenger App")
+tf = textbox(s, 0.7, 1.05, 11.9, 0.9)
+run(para(tf, first=True), "The control room, in every passenger's pocket", size=30, color=WHITE, bold=True)
+
+# phone mockup on the left
+phone = BRAND / "passenger-app.png"
+if phone.exists():
+    from PIL import Image as _PImg
+
+    iw, ih = _PImg.open(phone).size
+    ph = 4.8  # target height in inches (clears the footer line)
+    pw = ph * iw / ih
+    s.shapes.add_picture(str(phone), _in(1.5), _in(2.05), width=_in(pw), height=_in(ph))
+
+# feature callouts on the right
+feats = [
+    ("Live train status", "Delay, next stop and platform, refreshed in real time as the agents act.", AMBER),
+    ("Proactive alerts", "Crew changes and disruptions are pushed to passengers before they even ask.", BLUE),
+    ("Ask anything", "A voice or text assistant answers in plain language, in Hindi or English.", GREEN),
+    ("Smart alternatives", "When a train runs late, it suggests the next service that gets you there.", AMBER),
+]
+cx, cy = 6.6, 2.15
+for t, b, c in feats:
+    rect(s, cx, cy, 6.0, 1.08, fill=PANEL, line=LINE)
+    rect(s, cx, cy, 0.09, 1.08, fill=c, line=None, shape=MSO_SHAPE.RECTANGLE)
+    tf = textbox(s, cx + 0.32, cy + 0.16, 5.5, 0.4)
+    run(para(tf, first=True), t, size=16, color=WHITE, bold=True)
+    tf = textbox(s, cx + 0.32, cy + 0.56, 5.5, 0.45)
+    run(para(tf, first=True, line=1.02), b, size=12.5, color=MUTE)
+    cy += 1.2
+page_no(s, 5)
+
+
+# ── Slide 6 — Architecture ────────────────────────────────────────────────────
 s = slide(prs)
 chip(s, 0.7, 0.6, "Architecture")
 tf = textbox(s, 0.7, 1.05, 11.9, 0.9)
@@ -342,10 +392,10 @@ p = para(tf, first=True, align=PP_ALIGN.CENTER)
 run(p, "Stack:  ", size=13, color=MUTE, bold=True)
 run(p, "FastAPI  ·  in-process event bus  ·  SQLite  ·  React  ·  Hive agents",
     size=13, color=WHITE)
-page_no(s, 5)
+page_no(s, 6)
 
 
-# ── Slide 6 — Impact ──────────────────────────────────────────────────────────
+# ── Slide 7 — Impact ──────────────────────────────────────────────────────────
 s = slide(prs)
 chip(s, 0.7, 0.6, "Impact & Metrics")
 tf = textbox(s, 0.7, 1.05, 11.9, 0.9)
@@ -373,10 +423,10 @@ for i, (big, label, sub, c) in enumerate(metrics):
 tf = textbox(s, 0.7, 5.7, 11.9, 0.5, align=PP_ALIGN.CENTER)
 run(para(tf, first=True, align=PP_ALIGN.CENTER),
     "Simulated results. Pilot validation planned.", size=13, color=MUTE, italic=True)
-page_no(s, 6)
+page_no(s, 7)
 
 
-# ── Slide 7 — Roadmap ─────────────────────────────────────────────────────────
+# ── Slide 8 — Roadmap ─────────────────────────────────────────────────────────
 s = slide(prs)
 chip(s, 0.7, 0.6, "Roadmap")
 tf = textbox(s, 0.7, 1.05, 11.9, 0.9)
@@ -406,7 +456,7 @@ for i, (tag, name, items, c) in enumerate(phases):
         p = para(tf, first=(j == 0), space_after=7)
         run(p, "•  ", size=13, color=c, bold=True)
         run(p, it, size=13.5, color=WHITE)
-page_no(s, 7)
+page_no(s, 8)
 
 OUT.parent.mkdir(parents=True, exist_ok=True)
 prs.save(str(OUT))
