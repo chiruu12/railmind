@@ -147,7 +147,7 @@ tf = textbox(s, 1.5, 4.35, 10.333, 1.2, align=PP_ALIGN.CENTER)
 p = para(tf, first=True, align=PP_ALIGN.CENTER)
 run(p, "An agentic operating system for Indian Railways", size=22, color=WHITE, bold=True)
 p2 = para(tf, align=PP_ALIGN.CENTER, space_before=8)
-run(p2, "Multi-agent AI that keeps trains on time — in real time.", size=15, color=MUTE)
+run(p2, "Multi-agent AI that keeps trains on time, in real time.", size=15, color=MUTE)
 accent_underline(s, 5.4, 5.65, 2.5)
 tf3 = textbox(s, 1.5, 6.6, 10.333, 0.5, align=PP_ALIGN.CENTER)
 run(para(tf3, first=True, align=PP_ALIGN.CENTER),
@@ -159,20 +159,23 @@ s = slide(prs)
 chip(s, 0.7, 0.6, "The Problem")
 tf = textbox(s, 0.7, 1.05, 11.9, 1.6)
 p = para(tf, first=True, line=1.05)
-run(p, "India's railways are falling behind — ", size=40, color=WHITE, bold=True)
+run(p, "India's railways are falling behind, ", size=40, color=WHITE, bold=True)
 run(p, "on time.", size=40, color=AMBER, bold=True)
 
-# big stat block
+# big stat block: vertical comparison (older above, current below)
 rect(s, 0.7, 3.0, 6.0, 3.2, fill=PANEL, line=LINE)
-tf = textbox(s, 1.1, 3.35, 5.2, 0.5)
-run(para(tf, first=True), "ON-TIME PERFORMANCE", size=13, color=MUTE, bold=True, spacing=2)
-tf = textbox(s, 1.1, 3.85, 5.4, 1.5)
+tf = textbox(s, 1.1, 3.4, 5.4, 0.4)
+run(para(tf, first=True), "ON-TIME PERFORMANCE, KEY ROUTES", size=13, color=MUTE, bold=True, spacing=1.5)
+tf = textbox(s, 1.1, 4.0, 5.4, 0.7)
 p = para(tf, first=True)
-run(p, "94.2%", size=46, color=MUTE, bold=True)
-run(p, "  →  ", size=40, color=AMBER, bold=True)
-run(p, "73.6%", size=58, color=AMBER, bold=True)
-tf = textbox(s, 1.1, 5.5, 5.2, 0.6)
-run(para(tf, first=True), "Punctuality on key routes, 2020 → 2023", size=14, color=MUTE)
+run(p, "94.2%", size=32, color=MUTE, bold=True)
+run(p, "   in 2020", size=14, color=MUTE)
+tf = textbox(s, 1.1, 4.7, 5.4, 1.0)
+p = para(tf, first=True)
+run(p, "73.6%", size=54, color=AMBER, bold=True)
+run(p, "   by 2023", size=14, color=MUTE)
+tf = textbox(s, 1.1, 5.72, 5.4, 0.4)
+run(para(tf, first=True), "A 20.6 point fall in just three years.", size=13, color=MUTE, italic=True)
 
 # supporting facts
 facts = [
@@ -198,11 +201,11 @@ tf = textbox(s, 0.7, 1.05, 11.9, 0.9)
 run(para(tf, first=True), "Where the system breaks down today", size=32, color=WHITE, bold=True)
 
 cards = [
-    ("Chronic delays", "80% of key routes run over capacity — no slack to absorb a single slip."),
+    ("Chronic delays", "80% of key routes run over capacity, with no slack to absorb a single slip."),
     ("Fragmented scheduling", "Crew and platform assignments juggled by hand, control center to control center."),
     ("Aging infrastructure", "British-era signaling still gates throughput on critical sections."),
-    ("No proactive comms", "Passengers learn of disruptions late, if at all — no live, trustworthy updates."),
-    ("Freight–passenger conflict", "Shared tracks force constant trade-offs with no system-wide optimizer."),
+    ("No proactive comms", "Passengers learn of disruptions late, if at all, with no live, trustworthy updates."),
+    ("Freight vs passenger conflict", "Shared tracks force constant trade-offs with no system-wide optimizer."),
     ("Siloed control centers", "Each zone sees its own slice; no shared, real-time network awareness."),
 ]
 cw, ch, gx, gy = 3.83, 1.95, 0.2, 0.25
@@ -226,10 +229,10 @@ chip(s, 0.7, 0.6, "Solution")
 tf = textbox(s, 0.7, 1.05, 11.9, 0.95)
 p = para(tf, first=True)
 run(p, "Rail Saarthi", size=34, color=WHITE, bold=True)
-run(p, " — an agentic OS for Indian Railways", size=34, color=BLUE, bold=True)
+run(p, ": an agentic OS for Indian Railways", size=34, color=BLUE, bold=True)
 
 cols = [
-    ("What it is", "A multi-agent AI system — Train, Station, Crew, Maintenance and Passenger agents coordinating on a live digital twin.", BLUE),
+    ("What it is", "A multi-agent AI system: Train, Station, Crew, Maintenance and Passenger agents coordinating on a live digital twin.", BLUE),
     ("What it does", "Makes real-time decisions across trains, stations, crew and freight: detect a delay, reroute platforms, swap crew, alert passengers.", AMBER),
     ("What it replaces", "Reactive, manual control-room firefighting → proactive, autonomous coordination that self-heals the timetable.", GREEN),
 ]
@@ -280,7 +283,7 @@ else:
         size=11, color=LINE)
 
 callouts = [
-    ("Corridor map", "live train positions on the NDLS–DDU line"),
+    ("Corridor map", "live train positions on the NDLS to DDU line"),
     ("Agent feed", "the cascade resolving, decision by decision"),
     ("Platform timeline", "a conflict caught and avoided"),
     ("KPI bar", "instant platforming, avg delay, knock-on saved"),
@@ -369,7 +372,7 @@ for i, (big, label, sub, c) in enumerate(metrics):
 
 tf = textbox(s, 0.7, 5.7, 11.9, 0.5, align=PP_ALIGN.CENTER)
 run(para(tf, first=True, align=PP_ALIGN.CENTER),
-    "Simulated results — pilot validation planned.", size=13, color=MUTE, italic=True)
+    "Simulated results. Pilot validation planned.", size=13, color=MUTE, italic=True)
 page_no(s, 6)
 
 
